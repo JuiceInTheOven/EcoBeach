@@ -1,0 +1,24 @@
+@startmindmap
+* Semester Project
+** Beaches/Shorelines
+*** Sensing
+**** Range of water sensing
+*** Presentation
+**** Web App
+***** .NET
+**** Mobile application
+***** Android
+***** iOS
+***** React Native
+***** Location aware info
+**** Map-based gui
+***** Clickable markers
+****** Modal with info and rating
+*** Determine ground type
+**** Classification
+*** Animal data
+**** Jellyfish
+**** Needlefish
+*** Edge detection
+**** Classification
+@endmindmap
