@@ -1,6 +1,6 @@
 # ms-semesterproject
 
-## #Getting started
+## Getting started
 
 ### Prerequisites
 
