@@ -20,10 +20,10 @@ jobs:
           include-prerelease: true
 
       - name: Build
-        run: dotnet build src/WebApi/WebApi.csproj --configuration Release
+        run: dotnet build ./src/WebApi/WebApi.csproj --configuration Release
 
       - name: Test
-        run: dotnet test src/WebApi.Test/WebApi.Test.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./lcov.info --configuration Release
+        run: dotnet test ./src/WebApi.Test/WebApi.Test.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./lcov.info --configuration Release
 
       - name: Publish codecoverage to CodeCov
         uses: codecov/codecov-action@v2.1.0
