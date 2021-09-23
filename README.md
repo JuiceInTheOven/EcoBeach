@@ -4,11 +4,12 @@
 
 ### Prerequisites
 
-The following is required:
+Required software (using Docker):
 
 - Docker
 
-The following is the required to be installed on your development machine to run the projects without Docker.
+
+Required software (not using Docker):
 
 - .NET-6.0rc1 (because Nikolai runs on the Apple M1 processor, this or a newer version is required)
 
