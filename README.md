@@ -4,14 +4,18 @@
 
 ### Prerequisites
 
-Required software (using Docker):
+Required software:
 
 - Docker
-
-
-Required software (not using Docker):
-
+- LaTeX
+  - LaTeX Workshop (if using VSCode)
 - .NET-6.0rc1 (because Nikolai runs on the Apple M1 processor, this or a newer version is required)
+
+## LaTeX Report
+
+The report lives under /report. The LaTeX project is setup to follow the style of scientific reports. Frontmatter contains all content before the first chapter. Such as the Abstract, Title page etc. The Mainmatter contains all the chapters of the report, and lastly the backmatter contains all the content after the last chapter.
+
+If you need help with LaTeX let me (Nikolai) or Niels know.
 
 ## Services/Applications
 
