@@ -1,0 +1,26 @@
+\addbibresource{bibliography.bib}
+
+\graphicspath{ {resources/images}}
+
+\pagestyle{plain}
+
+\makeglossaries
+\defglsentryfmt{%
+	\ifglsused{\glslabel}{%
+		\glsgenentryfmt%
+	}{%
+		% Typeset first use
+		\textit{\glsgenentryfmt}%
+		\protect\footnote{%
+			\glsdesc{\glslabel}}%
+	}%
+}
+
+\hypersetup{
+	colorlinks=true,
+	allcolors=black,
+	filecolor=magenta,
+	urlcolor=blue,
+}
+
+\linespread{1.25}
