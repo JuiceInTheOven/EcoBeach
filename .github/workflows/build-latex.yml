@@ -10,4 +10,11 @@ jobs:
       uses: actions/checkout@v2
     - uses: xu-cheng/latex-action@v2
       with:
-        root_file: report/main.tex
+        working_directory: report/
+        root_file: main.tex
+        args: -pdf -file-line-error -interaction=nonstopmode -shell-escape
+    - name: Upload pdf to GitHub Workflow
+      uses: actions/upload-artifact@v1
+      with:
+        name: report
+        path: project-report/main.pdf
