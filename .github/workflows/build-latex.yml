@@ -14,7 +14,7 @@ jobs:
         root_file: main.tex
         args: -pdf -file-line-error -interaction=nonstopmode -shell-escape
     - name: Upload pdf to GitHub Workflow
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2.2.4
       with:
         name: report
         path: report/main.pdf
