@@ -7,13 +7,6 @@ BeachScanner is a python project to download Sentinel-2 data from known beach lo
 ### Prerequisites
 
 - `python3`
-- `venv`
-
-## Working with virtual environment
-
-- Initialize: `python3 -m venv venv`
-- Activate: `source ./venv/bin/activate`
-- Deactivate: `deactivate`
 
 ### Creating/updating dependency list
 
@@ -22,7 +15,7 @@ BeachScanner is a python project to download Sentinel-2 data from known beach lo
 
 Alternatively, you can freeze all installed packages to a requirements file like so:
 
-- `python3 -m pip freeze`
+- `python -m pip freeze`
 
 ### Downloading dependencies
 

@@ -1,12 +1,13 @@
 import folium
-import geopandas as gpd
-from sentinelsat.sentinel import SentinelAPI
-import rasterio 
-import matplotlib.pyplot as plt
-from rasterio import plot
-from rasterio.plot import show
-from rasterio.mask import mask
-from osgeo import gdal
+import geopandas as gdp
+from pandas.core import api
+from sentinelsat import SentinelAPI
+import rasterio
+#import matplotlib.pyplot as plt
+#from rasterio import plot
+#from rasterio.plot import show
+#from rasterio.mask import geometry_mask
+#from osgeo import gdal
 
 def main():
     m = folium.Map([50.20, 11.4], zoom_start=11)
@@ -16,9 +17,8 @@ def main():
     for i in boundary['geometry']:
         footprint = i
     
-    ## TODO: Move environment variables to a safe place
-    user = "jazerix"
-    password = "Uncombed1-Genre-Massager"
+    user = "nikolai.damm"
+    password = "fywfuP-qekfut-xomki3"
 
     api = SentinelAPI(user, password, 'https://scihub.copernicus.eu/dhus')
     products = api.query(footprint,
