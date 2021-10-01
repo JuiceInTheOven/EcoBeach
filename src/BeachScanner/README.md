@@ -1,24 +1,26 @@
 # BeachScanner
 
-This is a python project to download Sentinel-2 data from known beach locations and analyzing them for enviromental protection data.
+BeachScanner is a python project to download Sentinel-2 data from known beach locations and analyze them for environmental protection.
 
 ## Getting started
 
 ### Prerequisites
 
-- python3
-- venv
+- `python3`
+- `venv`
 
-## Initializing virtual environment
+## Working with virtual environment
 
-- `python3 -m venv env`
+- Initialize: `python3 -m venv venv`
+- Activate: `source ./venv/bin/activate`
+- Deactivate: `deactivate`
 
 ### Creating/updating dependency list
 
 - `pip install pipreqs` (Optional)
 - `pipreqs . --force` --> Creates/updates requirements.txt from script imports
 
-Alternatively you can freeze installed packages to the environment to a requirements file:
+Alternatively, you can freeze all installed packages to a requirements file like so:
 
 - `python3 -m pip freeze`
 
