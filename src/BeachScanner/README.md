@@ -17,6 +17,18 @@ Alternatively, you can freeze all installed packages to a requirements file like
 
 - `python -m pip freeze`
 
-### Downloading dependencies
+### Build/Downloading dependencies
 
 - `pip install -r requirements.txt`
+
+or with docker:
+
+- `docker build .` > copies files to docker image and installs requirements.txt
+
+### Running the script
+
+- `python main.py`
+
+or
+
+- `docker run imageName`
