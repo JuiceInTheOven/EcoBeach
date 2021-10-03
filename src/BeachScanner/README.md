@@ -23,7 +23,7 @@ Alternatively, you can freeze all installed packages to a requirements file like
 
 or with docker:
 
-- `docker build -t BeachScanner:latest .` > copies files to docker image and installs requirements.txt
+- `docker build -t BeachScanner:latest .` > copies files to docker image, installs requirements.txt and sets executable for the image.
 
 ### Running the script
 
