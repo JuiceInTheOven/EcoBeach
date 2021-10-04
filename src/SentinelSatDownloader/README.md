@@ -27,12 +27,13 @@ or with docker:
 
 ### Running the script
 
-- `python main.py`
+- `python main.py --position 10 11 --fromdate 20200901 --todate NOW`
 
 or
 
-- `docker run BeachScanner:latest`
+- `docker run BeachScanner:latest --position 10 11 --fromdate 20200901 --todate NOW`
 
 ## Libraries
 
 - <https://sentinelsat.readthedocs.io/en/stable/index.html>
+- geojson.io
