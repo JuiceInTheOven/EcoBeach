@@ -32,3 +32,7 @@ or with docker:
 or
 
 - `docker run BeachScanner:latest`
+
+## Libraries
+
+- <https://sentinelsat.readthedocs.io/en/stable/index.html>
