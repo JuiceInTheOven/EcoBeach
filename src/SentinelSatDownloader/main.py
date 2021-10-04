@@ -19,16 +19,18 @@ args = parser.parse_args()
 user = "nikolai.damm"
 password = "fywfuP-qekfut-xomki3"
 
+# Creates a small rectangle around a position, where the position is at the center of the rectangle.
 latRectSize = 0.005
 longRectSize = 0.003
-
 topLeftCorner = f"{args.position[0]-latRectSize} {args.position[1]+longRectSize}"
 bottomLeftCorner = f"{args.position[0]-latRectSize} {args.position[1]-longRectSize}"
 bottomRightCorner = f"{args.position[0]+latRectSize} {args.position[1]-longRectSize}"
 topRightCorner = f"{args.position[0]+latRectSize} {args.position[1]+longRectSize}"
 
+# Creates a GeoJSON rectangle query in the well known text (wtk) format that queries the sentinel satellite for maps that contain our rectangle query.
 rectangleQuery = f"POLYGON (({topLeftCorner}, {bottomLeftCorner}, {bottomRightCorner}, {topRightCorner}, {topLeftCorner}))"
 
+# Queryies the sentinel satellite with predefined parameters
 api = SentinelAPI(user, password)
 623680114746094
 products = api.query(rectangleQuery,
@@ -37,10 +39,8 @@ products = api.query(rectangleQuery,
             date = (args.fromdate, args.todate),
             cloudcoverpercentage=(0, 20))
 
+# Downloads selected data based on the query above
 nodefilter = make_path_filter("*/granule/*/img_data/r10m/*_tci_10m.jp2")
-api.download_all(products, "sentinelsat/downloads", nodefilter=nodefilter)
-
-# Unpack all zip archives in sentinelsat_downloads to sentinelsat/unprocessed
-
+api.download_all(products, "downloads", nodefilter=nodefilter)
 
 # Save pj2 images to hdfs
