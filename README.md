@@ -19,6 +19,10 @@ If you need help with LaTeX let me (Nikolai) or Niels know.
 
 ## Services/Applications
 
+### SentinelSatDownloader
+
+A service capable of downloading images from the Sentinel Sattelite given a position and a timeframe.
+
 ### WebApi
 
 The WebApi project is a simple .NET-6.0 backend project with an API to communicate to our Kafka and Hadoop processing pipeline. Swagger is enabled by default.
