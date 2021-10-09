@@ -1,0 +1,23 @@
+@startuml
+agent "Android App" as client
+agent WebApi
+agent Analyzer
+agent ksqlDB
+queue Kafka
+database HDFS
+
+
+client --> WebApi
+WebApi --> Analyzer
+WebApi --> ksqlDB
+ksqlDB --> Kafka
+Kafka --> HDFS
+
+@enduml
+
+Scoop (structure data) and  
+kSQL
+Kafka 
+Spark vs MapReduce
+Avro vs Parquet
+HDFS vs SQL
