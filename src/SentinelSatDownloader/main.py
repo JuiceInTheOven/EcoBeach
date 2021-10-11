@@ -1,25 +1,36 @@
-from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt, make_path_filter
-from flask import Flask
-
+import threading
+import flask
+import os
+import glob
 from flask_restful import reqparse
+from sentinelsat import SentinelAPI, make_path_filter
+from osgeo import gdal
 
-app = Flask(__name__)
-# http://localhost:105/persist?position=10 11&fromdate=YYYYMMDD&todate=YYYYMMDD
+
+app = flask.Flask(__name__)
+# http://x.x.x.x:105/persist?position=10 11&fromdate=YYYYMMDD&todate=YYYYMMDD
 @app.route('/download', methods=['GET', 'POST'])
 def download():
     args = parseRequestArgs()
-    
-    makePositionArgArrayOfFloats(args)
+    def do_work(args):
+        ChangeArgPositionIntoArrayOfFloats(args)
 
-    user = "nikolai.damm"
-    password = "fywfuP-qekfut-xomki3"
+        user = "nikolai.damm"
+        password = "fywfuP-qekfut-xomki3"
 
-    rectangleQuery = createRectangleWtkQueryFromArgs(args)
+        rectangleQuery = createRectangleWtkQueryFromArgs(args)
 
-    api, products = querySentinelSatApi(args, user, password, rectangleQuery)
+        api, products = querySentinelSatApi(args, user, password, rectangleQuery)
 
-    downloadProducts(api, products)
-    return
+        downloadProducts(api, products)
+
+        convertJP2FilesToTiff()
+        
+
+    thread = threading.Thread(target=do_work, kwargs={'args': args})
+    thread.start()
+
+    return flask.make_response("Download started!", 201)
 
 def parseRequestArgs():
     parser = reqparse.RequestParser()
@@ -30,7 +41,7 @@ def parseRequestArgs():
     args = parser.parse_args()
     return args
 
-def makePositionArgArrayOfFloats(args):
+def ChangeArgPositionIntoArrayOfFloats(args):
     positions = args.position.split()
     args.position = [float(positions[0]), float(positions[1])]
 
@@ -61,6 +72,30 @@ def querySentinelSatApi(args, user, password, rectangleQuery):
 def downloadProducts(api, products):
     nodefilter = make_path_filter("*/granule/*/img_data/r10m/*_tci_10m.jp2")
     api.download_all(products, "downloads", nodefilter=nodefilter)
+
+def convertJP2FilesToTiff(outputFolder = "processed"):
+    files = GetFiles
+    for index, inputRasterPath in enumerate(files):
+        # imgRasterInfo = GetRasterInfo(inputRaster=imgPath)
+        if not outputFolder:
+            newRasterPath = os.path.join(os.path.dirname(inputRasterPath),
+                                         os.path.basename(inputRasterPath)[:-4] + ".tif")
+            print("newRasterPath=", newRasterPath)
+        else:
+            newRasterPath = os.path.join(outputFolder,
+                                         os.path.basename(inputRasterPath)[:-4] + ".tif")
+            print("newRasterPath=", newRasterPath)
+
+        srcDS = gdal.Open(inputRasterPath)
+        gdal.Translate(newRasterPath, srcDS, format="GTiff", outputType=gdal.GDT_Float64)
+    return
+
+def GetFiles():
+    filesList = []
+    for file in glob.glob("./downloads/**/granule/**/img_data/r10m/*.jp2"):
+        filesList.append(file)
+    filesList.sort()
+    return filesList
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=105)
