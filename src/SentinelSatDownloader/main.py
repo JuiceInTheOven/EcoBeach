@@ -1,37 +1,33 @@
-import threading
-import flask
+import logging
 import os
-import glob
-import shutil
+import flask
+import threading
 from flask_restful import reqparse
-from sentinelsat import SentinelAPI, make_path_filter
 from osgeo import gdal
-
+import matplotlib.pyplot as plt
+from sentinelloader import Sentinel2Loader
+from shapely.geometry import Polygon
 
 app = flask.Flask(__name__)
-# http://x.x.x.x:105/persist?position=10 11&fromdate=YYYYMMDD&todate=YYYYMMDD
 @app.route('/download', methods=['GET', 'POST'])
 def download():
     args = parseRequestArgs()
     def do_work(args):
-        ChangeArgPositionIntoArrayOfFloats(args)
+        sl = Sentinel2Loader('downloads', 
+            args.username, args.password,
+            apiUrl='https://apihub.copernicus.eu/apihub/', showProgressbars=True, loglevel=logging.DEBUG)
 
-        user = "nikolai.damm"
-        password = "fywfuP-qekfut-xomki3"
+        area = createBoundaryBox(args.position)
 
-        rectangleQuery = createRectangleWtkQueryFromArgs(args)
-
-        api, products = querySentinelSatApi(args, user, password, rectangleQuery)
-
-        downloadProducts(api, products)
-
-        convertJP2FilesToTiff()
-
-        #cleanup()
+        geoTiffs = sl.getRegionHistory(area, 'TCI', '10m', args.fromdate, args.todate, daysStep=5)
+        for geoTiff in geoTiffs:
+            print('Desired image was prepared at')
+            print(geoTiff)
 
         #saveImagesToHdfs()
-        
 
+        #cleanup()
+        
     thread = threading.Thread(target=do_work, kwargs={'args': args})
     thread.start()
 
@@ -39,77 +35,29 @@ def download():
 
 def parseRequestArgs():
     parser = reqparse.RequestParser()
+    parser.add_argument('username', type=str, help='copernicus account username')
+    parser.add_argument('password', type=str, help='copernicus account password')
     parser.add_argument('position', type=str, help='a list of positions -> lat lon')
     parser.add_argument('fromdate', type=str, help="The earliest date to get map data from -> 'YYYYMMDD'")
     parser.add_argument('todate', type=str, help="The latest date to get map data from -> 'YYYYMMDD' or 'NOW' for current date")
 
     args = parser.parse_args()
-    return args
-
-def ChangeArgPositionIntoArrayOfFloats(args):
     positions = args.position.split(" ")
     args.position = [float(positions[0]), float(positions[1])]
+    return args
 
-def createRectangleWtkQueryFromArgs(args):
+
+def createBoundaryBox(position):
     # Creates a small rectangle boundary box around a position, where the position is at the center of the rectangle.
-    longRectSize = 0.005
-    latRectSize = 0.0025
-    topLeftCorner = f"{args.position[0]-longRectSize} {args.position[1]+latRectSize}"
-    bottomLeftCorner = f"{args.position[0]-longRectSize} {args.position[1]-latRectSize}"
-    bottomRightCorner = f"{args.position[0]+longRectSize} {args.position[1]-latRectSize}"
-    topRightCorner = f"{args.position[0]+longRectSize} {args.position[1]+latRectSize}"
+    longRectSize = 0.02
+    latRectSize = 0.01
+    topLeftCorner = (position[0]-longRectSize, position[1]+latRectSize)
+    bottomLeftCorner = (position[0]-longRectSize, position[1]-latRectSize)
+    bottomRightCorner = (position[0]+longRectSize, position[1]-latRectSize)
+    topRightCorner = (position[0]+longRectSize, position[1]+latRectSize)
 
-    # Creates a GeoJSON rectangle query in the well known text (wtk) format that queries the sentinel satellite for maps that contain our rectangle query.
-    rectangleQuery = f"POLYGON (({topLeftCorner}, {bottomLeftCorner}, {bottomRightCorner}, {topRightCorner}, {topLeftCorner}))"
-    return rectangleQuery
-
-def querySentinelSatApi(args, user, password, rectangleQuery):
-    api = SentinelAPI(user, password)
-    623680114746094
-    products = api.query(rectangleQuery,
-                platformname = 'Sentinel-2',
-                processinglevel = 'Level-2A',
-                date = (args.fromdate, args.todate),
-                cloudcoverpercentage=(0, 20),
-                limit=1)
-                
-    return api,products
-
-def downloadProducts(api, products):
-    try: 
-        os.mkdir("downloads") 
-    except OSError as error: 
-        print(error)  
-    nodefilter = make_path_filter("*/granule/*/img_data/r10m/*_tci_10m.jp2")
-    api.download_all(products, "downloads", nodefilter=nodefilter)
-
-def convertJP2FilesToTiff(outputFolder = "processed_downloads"):
-    files = getJP2Files()
-    for index, inputRasterPath in enumerate(files):
-        # imgRasterInfo = GetRasterInfo(inputRaster=imgPath)
-        if not outputFolder:
-            newRasterPath = os.path.join(os.path.dirname(inputRasterPath),
-                                         os.path.basename(inputRasterPath)[:-4] + ".tif")
-            print("newRasterPath=", newRasterPath)
-        else:
-            newRasterPath = os.path.join(outputFolder,
-                                         os.path.basename(inputRasterPath)[:-4] + ".tif")
-            print("newRasterPath=", newRasterPath)
-
-        try: 
-            os.mkdir("processed_downloads") 
-        except OSError as error: 
-            print(error)  
-        srcDS = gdal.Open(inputRasterPath, gdal.GA_ReadOnly)
-        gdal.Translate(newRasterPath, srcDS)
-    return
-
-def getJP2Files():
-    filesList = []
-    for file in glob.glob("./downloads/**/granule/**/img_data/r10m/*.jp2"):
-        filesList.append(file)
-    filesList.sort()
-    return filesList
+    return Polygon([topLeftCorner, bottomLeftCorner,
+                    bottomRightCorner, topRightCorner, topLeftCorner])
 
 def cleanup():
     dir_path = 'downloads'
@@ -120,4 +68,4 @@ def cleanup():
         print("Error: %s : %s" % (dir_path, e.strerror))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=105)
+    app.run(host='0.0.0.0', port=8686)
