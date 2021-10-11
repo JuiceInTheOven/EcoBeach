@@ -25,9 +25,9 @@ def download():
 
         downloadProducts(api, products)
 
-        convertJP2FilesToTiff(args.position)
+        convertJP2FilesToTiff()
 
-        cleanup()
+        #cleanup()
 
         #saveImagesToHdfs()
         
@@ -47,17 +47,17 @@ def parseRequestArgs():
     return args
 
 def ChangeArgPositionIntoArrayOfFloats(args):
-    positions = args.position.split()
+    positions = args.position.split(" ")
     args.position = [float(positions[0]), float(positions[1])]
 
 def createRectangleWtkQueryFromArgs(args):
     # Creates a small rectangle boundary box around a position, where the position is at the center of the rectangle.
-    latRectSize = 0.005
-    longRectSize = 0.0025
-    topLeftCorner = f"{args.position[0]-latRectSize} {args.position[1]+longRectSize}"
-    bottomLeftCorner = f"{args.position[0]-latRectSize} {args.position[1]-longRectSize}"
-    bottomRightCorner = f"{args.position[0]+latRectSize} {args.position[1]-longRectSize}"
-    topRightCorner = f"{args.position[0]+latRectSize} {args.position[1]+longRectSize}"
+    longRectSize = 0.005
+    latRectSize = 0.0025
+    topLeftCorner = f"{args.position[0]-longRectSize} {args.position[1]+latRectSize}"
+    bottomLeftCorner = f"{args.position[0]-longRectSize} {args.position[1]-latRectSize}"
+    bottomRightCorner = f"{args.position[0]+longRectSize} {args.position[1]-latRectSize}"
+    topRightCorner = f"{args.position[0]+longRectSize} {args.position[1]+latRectSize}"
 
     # Creates a GeoJSON rectangle query in the well known text (wtk) format that queries the sentinel satellite for maps that contain our rectangle query.
     rectangleQuery = f"POLYGON (({topLeftCorner}, {bottomLeftCorner}, {bottomRightCorner}, {topRightCorner}, {topLeftCorner}))"
@@ -70,16 +70,21 @@ def querySentinelSatApi(args, user, password, rectangleQuery):
                 platformname = 'Sentinel-2',
                 processinglevel = 'Level-2A',
                 date = (args.fromdate, args.todate),
-                cloudcoverpercentage=(0, 20))
+                cloudcoverpercentage=(0, 20),
+                limit=1)
                 
     return api,products
 
 def downloadProducts(api, products):
+    try: 
+        os.mkdir("downloads") 
+    except OSError as error: 
+        print(error)  
     nodefilter = make_path_filter("*/granule/*/img_data/r10m/*_tci_10m.jp2")
     api.download_all(products, "downloads", nodefilter=nodefilter)
 
-def convertJP2FilesToTiff(position, outputFolder = "processed"):
-    files = GetJP2Files()
+def convertJP2FilesToTiff(outputFolder = "processed_downloads"):
+    files = getJP2Files()
     for index, inputRasterPath in enumerate(files):
         # imgRasterInfo = GetRasterInfo(inputRaster=imgPath)
         if not outputFolder:
@@ -91,10 +96,12 @@ def convertJP2FilesToTiff(position, outputFolder = "processed"):
                                          os.path.basename(inputRasterPath)[:-4] + ".tif")
             print("newRasterPath=", newRasterPath)
 
-        srcDS = gdal.Open(inputRasterPath)
-        latRectSize = 0.005
-        longRectSize = 0.0025
-        gdal.Translate(newRasterPath, srcDS, format="GTiff", outputType=gdal.GDT_Float64, projWin = [position[0]-latRectSize, position[1]+longRectSize, position[0]+latRectSize, position[1]-longRectSize])
+        try: 
+            os.mkdir("processed_downloads") 
+        except OSError as error: 
+            print(error)  
+        srcDS = gdal.Open(inputRasterPath, gdal.GA_ReadOnly)
+        gdal.Translate(newRasterPath, srcDS)
     return
 
 def getJP2Files():
