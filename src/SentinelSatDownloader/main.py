@@ -12,6 +12,7 @@ app = flask.Flask(__name__)
 @app.route('/download', methods=['GET', 'POST'])
 def download():
     args = parseRequestArgs()
+    makeDir("downloads")
     def do_work(args):
         sl = Sentinel2Loader('downloads', 
             args.username, args.password,
@@ -26,12 +27,18 @@ def download():
 
         #saveImagesToHdfs()
 
-        #cleanup()
+        #cleanup() TODO: Uncomment when images are correctly saved to HDFS
         
     thread = threading.Thread(target=do_work, kwargs={'args': args})
     thread.start()
 
     return flask.make_response("Download started!", 201)
+
+def makeDir(dirname):
+    try: 
+        os.mkdir(dirname) 
+    except OSError as error: 
+        print(error)  
 
 def parseRequestArgs():
     parser = reqparse.RequestParser()
