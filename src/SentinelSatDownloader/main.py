@@ -2,6 +2,7 @@ import threading
 import flask
 import os
 import glob
+import shutil
 from flask_restful import reqparse
 from sentinelsat import SentinelAPI, make_path_filter
 from osgeo import gdal
@@ -24,7 +25,11 @@ def download():
 
         downloadProducts(api, products)
 
-        convertJP2FilesToTiff()
+        convertJP2FilesToTiff(args.position)
+
+        cleanup()
+
+        #saveImagesToHdfs()
         
 
     thread = threading.Thread(target=do_work, kwargs={'args': args})
@@ -73,8 +78,8 @@ def downloadProducts(api, products):
     nodefilter = make_path_filter("*/granule/*/img_data/r10m/*_tci_10m.jp2")
     api.download_all(products, "downloads", nodefilter=nodefilter)
 
-def convertJP2FilesToTiff(outputFolder = "processed"):
-    files = GetFiles
+def convertJP2FilesToTiff(position, outputFolder = "processed"):
+    files = GetJP2Files()
     for index, inputRasterPath in enumerate(files):
         # imgRasterInfo = GetRasterInfo(inputRaster=imgPath)
         if not outputFolder:
@@ -87,15 +92,25 @@ def convertJP2FilesToTiff(outputFolder = "processed"):
             print("newRasterPath=", newRasterPath)
 
         srcDS = gdal.Open(inputRasterPath)
-        gdal.Translate(newRasterPath, srcDS, format="GTiff", outputType=gdal.GDT_Float64)
+        latRectSize = 0.005
+        longRectSize = 0.0025
+        gdal.Translate(newRasterPath, srcDS, format="GTiff", outputType=gdal.GDT_Float64, projWin = [position[0]-latRectSize, position[1]+longRectSize, position[0]+latRectSize, position[1]-longRectSize])
     return
 
-def GetFiles():
+def getJP2Files():
     filesList = []
     for file in glob.glob("./downloads/**/granule/**/img_data/r10m/*.jp2"):
         filesList.append(file)
     filesList.sort()
     return filesList
+
+def cleanup():
+    dir_path = 'downloads'
+
+    try:
+        shutil.rmtree(dir_path)
+    except OSError as e:
+        print("Error: %s : %s" % (dir_path, e.strerror))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=105)
