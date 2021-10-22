@@ -1,11 +1,10 @@
-import logging
-from hdfs import InsecureClient
+#import logging
 import os
-import flask
 import threading
+import flask
 from flask_restful import reqparse
+from hdfs import InsecureClient
 from osgeo import gdal
-import matplotlib.pyplot as plt
 from sentinelloader import Sentinel2Loader
 from shapely.geometry import Polygon
 
@@ -63,8 +62,9 @@ def createBoundaryBox(position):
                     bottomRightCorner, topRightCorner, topLeftCorner])
 
 def saveToHdfs(geoTiffs):
-    for geoTiff in geoTiffs:
-        client = InsecureClient('http://namenode:9870', user='root')
+    client = InsecureClient('http://namenode:9870', user='root')
+    #for geoTiff in geoTiffs:
+        
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8686)
