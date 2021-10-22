@@ -1,6 +1,7 @@
 Shapely==1.7.1
-sentinelloader==1.1.1
-Flask==2.0.2
+GDAL==3.3.2
 matplotlib==3.4.3
-flask_restful==0.3.9
+Flask==2.0.2
+sentinelsat==1.1.0
+Flask_RESTful==0.3.9
 osgeo==0.0.1

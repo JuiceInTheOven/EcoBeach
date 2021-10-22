@@ -1,4 +1,5 @@
 import logging
+from hdfs import InsecureClient
 import os
 import flask
 import threading
@@ -14,20 +15,8 @@ def download():
     args = parseRequestArgs()
     makeDir("downloads")
     def do_work(args):
-        sl = Sentinel2Loader('downloads', 
-            args.username, args.password,
-            apiUrl='https://apihub.copernicus.eu/apihub/', showProgressbars=True, loglevel=logging.DEBUG)
-
-        area = createBoundaryBox(args.position)
-
-        geoTiffs = sl.getRegionHistory(area, 'TCI', '10m', args.fromdate, args.todate, daysStep=5)
-        for geoTiff in geoTiffs:
-            print('Desired image was prepared at')
-            print(geoTiff)
-
-        #saveImagesToHdfs()
-
-        #cleanup() TODO: Uncomment when images are correctly saved to HDFS
+        geoTiffs = downloadSentinelImages(args)
+        saveToHdfs(geoTiffs)
         
     thread = threading.Thread(target=do_work, kwargs={'args': args})
     thread.start()
@@ -49,10 +38,17 @@ def parseRequestArgs():
     parser.add_argument('todate', type=str, help="The latest date to get map data from -> 'YYYYMMDD' or 'NOW' for current date")
 
     args = parser.parse_args()
-    positions = args.position.split(" ")
+    positions = args.position.split()
     args.position = [float(positions[0]), float(positions[1])]
     return args
 
+def downloadSentinelImages(args):
+        sl = Sentinel2Loader('downloads', 
+            args.username, args.password, cloudCoverage=(0,20), cacheTilesData=False)
+
+        area = createBoundaryBox(args.position)
+        geoTiffs = sl.getRegionHistory(area, 'TCI', '10m', args.fromdate, args.todate)
+        return geoTiffs
 
 def createBoundaryBox(position):
     # Creates a small rectangle boundary box around a position, where the position is at the center of the rectangle.
@@ -66,13 +62,9 @@ def createBoundaryBox(position):
     return Polygon([topLeftCorner, bottomLeftCorner,
                     bottomRightCorner, topRightCorner, topLeftCorner])
 
-def cleanup():
-    dir_path = 'downloads'
-
-    try:
-        shutil.rmtree(dir_path)
-    except OSError as e:
-        print("Error: %s : %s" % (dir_path, e.strerror))
+def saveToHdfs(geoTiffs):
+    for geoTiff in geoTiffs:
+        client = InsecureClient('http://namenode:9870', user='root')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8686)
