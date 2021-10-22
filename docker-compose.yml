@@ -9,7 +9,7 @@ services:
       context: src/WebApi
       dockerfile: Dockerfile
     ports:
-      - 5000:5000
+      - 9000:9000
 
   sentinelscraper:
     image: sentinel-scraper
@@ -17,15 +17,14 @@ services:
       context: src/SentinelScraper
       dockerfile: Dockerfile
     ports:
-      - 8686:8686
+      - 9001:9001
 
   namenode: #Master (metadata/chunk)
     image: bde2020/hadoop-namenode:latest
     container_name: namenode
     restart: always
     ports:
-      - 9870:9870
-      - 9000:9000
+      - 9800:9800
     volumes:
       - hadoop_namenode:/hadoop/dfs/name
     environment:
@@ -34,14 +33,14 @@ services:
       - ./hadoop.env
     networks:
       cscourse:
-        ipv4_address: 172.200.0.1
+        ipv4_address: 172.200.0.2
 
   datanode1: #Slave1
     image: bde2020/hadoop-datanode:latest
     container_name: datanode1
     restart: always
     ports:
-      - 9864:9864
+      - 9801:9801
     volumes:
       - hadoop_datanode1:/hadoop/dfs/data
     environment:
@@ -50,7 +49,7 @@ services:
       - ./hadoop.env
     networks:
       cscourse:
-        ipv4_address: 172.200.0.2
+        ipv4_address: 172.200.0.3
 
 networks:
   cscourse:
