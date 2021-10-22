@@ -9,8 +9,8 @@ from sentinelloader import Sentinel2Loader
 from shapely.geometry import Polygon
 
 app = flask.Flask(__name__)
-@app.route('/download', methods=['GET', 'POST'])
-def download():
+@app.route('/scrape', methods=['GET', 'POST'])
+def scrape():
     args = parseRequestArgs()
     makeDir("downloads")
     def do_work(args):

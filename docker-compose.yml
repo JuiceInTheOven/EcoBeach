@@ -11,10 +11,10 @@ services:
     ports:
       - 5000:5000
 
-  sentinelsatdownloader:
-    image: sentinel-sat-downloader
+  sentinelscraper:
+    image: sentinel-scraper
     build:
-      context: src/SentinelSatDownloader
+      context: src/SentinelScraper
       dockerfile: Dockerfile
     ports:
       - 8686:8686
