@@ -1,6 +1,6 @@
-# BeachScanner
+# SentinelScraper
 
-BeachScanner is a python project to download Sentinel-2 data from known beach locations and analyze them for environmental protection.
+SentinelScraper is a python project to download Sentinel-2 imagery, crop the images, and save them to HDFS.
 
 ## Getting started
 
@@ -27,11 +27,11 @@ or with docker:
 
 ### Running the script
 
-- `python main.py --position 10 11 --fromdate 20200901 --todate NOW`
+- `python main.py --position 10 11 --fromdate 2021-09-01 --todate 2021-10-12`
 
 or
 
-- `docker run BeachScanner:latest --position 10 11 --fromdate 20200901 --todate NOW`
+- `docker run BeachScanner:latest --position 10 11 --fromdate 2021-09-01 --todate 2021-10-12`
 
 ## Libraries
 

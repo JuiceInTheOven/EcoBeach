@@ -1,0 +1,10 @@
+hdfs
+flask
+flask_restful
+gdal
+shapely
+rasterio
+image
+cartopy
+pyarrow
+git+https://github.com/flaviostutz/sentinelloader
