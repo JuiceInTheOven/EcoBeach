@@ -7,4 +7,5 @@ rasterio
 image
 cartopy
 pyarrow
+openpyxl
 git+https://github.com/flaviostutz/sentinelloader
