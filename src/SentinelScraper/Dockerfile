@@ -1,5 +1,5 @@
 FROM osgeo/gdal:latest
-EXPOSE 8686
+EXPOSE 8081
 
 RUN apt-get update -y
 #install git

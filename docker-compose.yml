@@ -3,28 +3,13 @@
 version: "3.5"
 
 services:
-  webapi:
-    image: webapi
-    build:
-      context: src/WebApi
-      dockerfile: Dockerfile
-    ports:
-      - 9000:9000
-
-  sentinelscraper:
-    image: sentinel-scraper
-    build:
-      context: src/SentinelScraper
-      dockerfile: Dockerfile
-    ports:
-      - 9001:9001
-
   namenode: #Master (metadata/chunk)
     image: bde2020/hadoop-namenode:latest
     container_name: namenode
     restart: always
     ports:
-      - 9800:9800
+      - 9870:9870
+      - 9000:9000
     volumes:
       - hadoop_namenode:/hadoop/dfs/name
     environment:
@@ -32,7 +17,7 @@ services:
     env_file:
       - ./hadoop.env
     networks:
-      cscourse:
+      hadoop_network:
         ipv4_address: 172.200.0.2
 
   datanode1: #Slave1
@@ -40,7 +25,7 @@ services:
     container_name: datanode1
     restart: always
     ports:
-      - 9801:9801
+      - 9864:9864
     volumes:
       - hadoop_datanode1:/hadoop/dfs/data
     environment:
@@ -48,11 +33,30 @@ services:
     env_file:
       - ./hadoop.env
     networks:
-      cscourse:
+      hadoop_network:
         ipv4_address: 172.200.0.3
 
+  webapi:
+    image: webapi
+    build:
+      context: src/WebApi
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+
+  sentinelscraper:
+    image: sentinel-scraper
+    build:
+      context: src/SentinelScraper
+      dockerfile: Dockerfile
+    ports:
+      - 8081:8081
+    networks:
+      hadoop_network:
+        ipv4_address: 172.200.0.240
+
 networks:
-  cscourse:
+  hadoop_network:
     name: hadoop
     ipam:
       config:

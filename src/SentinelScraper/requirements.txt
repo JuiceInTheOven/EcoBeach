@@ -6,4 +6,5 @@ shapely
 rasterio
 image
 cartopy
+pyarrow
 git+https://github.com/flaviostutz/sentinelloader
