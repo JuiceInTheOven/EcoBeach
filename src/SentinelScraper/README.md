@@ -24,6 +24,12 @@ or
 
 - `docker run BeachScanner:latest`
 
+The script supports the following 3 optional arguments:
+
+- `--days 365` scrapes for imagery for the last year. Defaults to 7 days.
+- `--user someUser` username for Cupernicus. Defaults to Nikolai's username.
+- `--pass ****` passford for Cupernicus. Defaults to Nikolai's password.
+
 ## Libraries
 
 - [Sentinel2Loader](https://github.com/flaviostutz/sentinelloader)
