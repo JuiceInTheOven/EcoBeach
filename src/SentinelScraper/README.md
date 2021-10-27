@@ -1,21 +1,12 @@
 # SentinelScraper
 
-SentinelScraper is a python project to download Sentinel-2 imagery, crop the images, and save them to HDFS.
+SentinelScraper is a Kafka producer to download Sentinel-2 imagery, crop the images, mask it with a black and white filter, and save them to a Kafka topic.
 
 ## Getting started
 
 ### Prerequisites
 
 - `python3`
-
-### Creating/updating dependency list
-
-- `pip install pipreqs` (Optional)
-- `pipreqs . --force` --> Creates/updates requirements.txt from script imports
-
-Alternatively, you can freeze all installed packages to a requirements file like so:
-
-- `python -m pip freeze`
 
 ### Build/Downloading dependencies
 
@@ -27,13 +18,12 @@ or with docker:
 
 ### Running the script
 
-- `python main.py --position 10 11 --fromdate 2021-09-01 --todate 2021-10-12`
+- `python main.py`
 
 or
 
-- `docker run BeachScanner:latest --position 10 11 --fromdate 2021-09-01 --todate 2021-10-12`
+- `docker run BeachScanner:latest`
 
 ## Libraries
 
-- <https://sentinelsat.readthedocs.io/en/stable/index.html>
-- geojson.io
+- [Sentinel2Loader](https://github.com/flaviostutz/sentinelloader)

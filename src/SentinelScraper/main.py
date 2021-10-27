@@ -1,79 +1,60 @@
-import os
-import threading
-import flask
-from flask_restful import reqparse
-from hdfs import InsecureClient
 from osgeo import gdal
-from sentinelloader import Sentinel2Loader
+import sentinel2loader as sl2
 from shapely.geometry import Polygon
-import pyarrow.parquet as pq
 import pandas as pd
-import pyarrow as pa
+from datetime import date
+import time
+from matplotlib import colors
+import matplotlib.pyplot as plt
+import cv2
+import os
+import shutil
 
-app = flask.Flask(__name__)
-@app.route('/scrape', methods=['GET', 'POST'])
 def scrape():
-    args = parseRequestArgs()
-    makeDir("downloads")
-    def do_work(args):
-        geoTiffs = downloadSentinelImages(args)
-        saveToHdfs(args.position, geoTiffs)
-        
-    thread = threading.Thread(target=do_work, kwargs={'args': args})
-    thread.start()
+    user = "nikolai.damm"
+    passw = "fywfuP-qekfut-xomki3"
 
-    return flask.make_response("Download started!", 201)
+    sl = sl2.Sentinel2Loader('downloads', user, passw, cloudCoverage=(0,20))
+    dfs = pd.read_excel("DK_beaches.xlsx", sheet_name="DK_BW2020")
 
-def makeDir(dirname):
-    try: 
-        os.mkdir(dirname) 
-    except OSError as error: 
-        print(error)  
+    # len(dfs.index)
+    for i in range(len(dfs.index)):
+        locationName = dfs.iloc[i][3]
+        lon = dfs.iloc[i][6]
+        lat = dfs.iloc[i][7]
 
-def parseRequestArgs():
-    parser = reqparse.RequestParser()
-    parser.add_argument('username', type=str, help='copernicus account username')
-    parser.add_argument('password', type=str, help='copernicus account password')
-    parser.add_argument('position', type=str, help='a list of positions -> lat lon')
-    parser.add_argument('fromdate', type=str, help="The earliest date to get map data from -> 'YYYYMMDD'")
-    parser.add_argument('todate', type=str, help="The latest date to get map data from -> 'YYYYMMDD' or 'NOW' for current date")
+        area = createSearchArea(lon, lat, 2)
 
-    args = parser.parse_args()
-    positions = args.position.split()
-    args.position = [float(positions[0]), float(positions[1])]
-    return args
+        geoTiffs = sl.getRegionHistory(area, 'NDWI2', '10m', "2015-01-01", str(date.today()))
+        for geoTiff in geoTiffs:
+            cmap = blackAndWhiteColorMap()
+            img = cv2.imread(geoTiff, -1) #plt.imread does not work, so we use OpenCV to read the .tiff file
+            geoTiffDate = geoTiff.split("-NDWI2")[0].split("tmp/")[1] # gets the date part from the geoTiff path
+            processedImg = f"processed/{locationName}-{geoTiffDate}.png"
+            if(not os.path.exists("processed")):
+                os.mkdir("processed")
+            plt.imsave(processedImg, img, cmap=cmap)
+            #publishToTopic(locationName, [lon, lat], geoTiffDate, processedImg)
+            os.remove(geoTiff)
+        shutil.rmtree("downloads")
 
-def downloadSentinelImages(args):
-        sl = Sentinel2Loader('downloads', 
-            args.username, args.password, cloudCoverage=(0,20), cacheTilesData=False)
-
-        area = createBoundaryBox(args.position, 2)
-        geoTiffs = sl.getRegionHistory(area, 'TCI', '10m', args.fromdate, args.todate)
-        return geoTiffs
-
-def createBoundaryBox(position, size):
+def createSearchArea(lon, lat, size):
     # Creates a small rectangle boundary box around a position, where the position is at the center of the rectangle.
-    longRectSize = size/100
-    latRectSize = longRectSize/2
-    topLeftCorner = (position[0]-longRectSize, position[1]+latRectSize)
-    bottomLeftCorner = (position[0]-longRectSize, position[1]-latRectSize)
-    bottomRightCorner = (position[0]+longRectSize, position[1]-latRectSize)
-    topRightCorner = (position[0]+longRectSize, position[1]+latRectSize)
+    width = size/100
+    height = width/2
+    topLeftCorner = (lon-width, lat+height)
+    bottomLeftCorner = (lon-width, lat-height)
+    bottomRightCorner = (lon+width, lat-height)
+    topRightCorner = (lon+width, lat+height)
 
     return Polygon([topLeftCorner, bottomLeftCorner,
-                    bottomRightCorner, topRightCorner, topLeftCorner])
+                bottomRightCorner, topRightCorner, topLeftCorner])
 
-def saveToHdfs(position, geoTiffs):
-    client = InsecureClient('http://namenode:9870', user='root')
-    df = pd.DataFrame(columns=["date", 'image_tiff'])
-    for geoTiff in geoTiffs:
-        date = geoTiff.split("/")[2].split("-TCI")[0]
-        bytes = open(geoTiff, "rb").read()
-        df = df.append({"date": date, "image_tiff": bytes}, ignore_index=True)
-    table = pa.Table.from_pandas(df)
-    fileName = f'{position[0]}-{position[1]}.parquet'
-    pq.write_table(table, fileName)
-    client.upload('/', fileName, overwrite=True)
+def blackAndWhiteColorMap():
+    cmap = colors.ListedColormap(['black', 'white'])
+    bounds=[0,5,10]
+    colors.BoundaryNorm(bounds, cmap.N)
+    return cmap
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8081)
+    scrape()
