@@ -53,10 +53,11 @@ def createSearchArea(lon, lat, size):
     # Creates a small rectangle boundary box around a position, where the position is at the center of the rectangle.
     width = size/100
     height = width/2
-    topLeftCorner = (lon-width, lat+height)
-    bottomLeftCorner = (lon-width, lat-height)
-    bottomRightCorner = (lon+width, lat-height)
-    topRightCorner = (lon+width, lat+height)
+    numberOfDecimals = 5
+    topLeftCorner = (round(lon-width, numberOfDecimals), round(lat+height,numberOfDecimals))
+    bottomLeftCorner = (round(lon-width,numberOfDecimals), round(lat-height,numberOfDecimals))
+    bottomRightCorner = (round(lon+width,numberOfDecimals), round(lat-height,numberOfDecimals))
+    topRightCorner = (round(lon+width,numberOfDecimals), round(lat+height,numberOfDecimals))
 
     return Polygon([topLeftCorner, bottomLeftCorner,
                 bottomRightCorner, topRightCorner, topLeftCorner])
