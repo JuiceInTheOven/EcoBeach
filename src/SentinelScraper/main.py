@@ -15,26 +15,22 @@ from kafka import KafkaProducer
 import argparse
 
 def scrape(args):
-    user = args.user
-    passw = args.parser
+    user = args.username
+    passw = args.password
 
     sl = sl2.Sentinel2Loader('downloads', user, passw, cloudCoverage=(0,1), loglevel=logging.INFO)
     dfs = pd.read_excel("DK_beaches.xlsx", sheet_name="DK_BW2020")
 
     # We shuffle the possible indexes, to randomize which location is queried first, to use the 20 LTA retries on different products.
-    for ri in range(1): #randomIndexesInDfs(dfs):
+    for ri in randomIndexesInDfs(dfs):
         locationName = dfs.iloc[ri][3]
         lon = dfs.iloc[ri][6]
         lat = dfs.iloc[ri][7]
 
         today = date.today()
-        week_ago = today - date.timedelta(days=7)
+        week_ago = today - timedelta(days=7)
         area = createSearchArea(lon, lat, 2)
-        geoTiffs = []
-        if(args.days != None):
-            geoTiffs = sl.getRegionHistory(area, 'NDWI2', '10m', str(today - date.timedelta(days=args.days)), today)
-        else:
-            geoTiffs = sl.getRegionHistory(area, 'NDWI2', '10m', str(week_ago), str(today), daysStep=1)
+        geoTiffs = sl.getRegionHistory(area, 'NDWI2', '10m', str(today - timedelta(days=args.days)), str(today), daysStep=1)
         for geoTiff in geoTiffs:  
             geoTiffDate = geoTiff.split("-NDWI2")[0].split("tmp/")[1] # gets the date part from the geoTiff path
             imageName = f"{locationName}-{geoTiffDate}.png"
@@ -45,7 +41,8 @@ def scrape(args):
                 createBlackAndWhiteImg(geoTiff, imagePath)
                 #publishToKafkaTopic(locationName, [lon, lat], geoTiffDate, imageName)
             os.remove(geoTiff) # We remove tmp files after they are used
-        shutil.rmtree("downloads") # We have to cleanup cached products when we have used them, as they take up a lot of space.
+        if(os.path.exists("downloads")):
+            shutil.rmtree("downloads") # We have to cleanup cached products when we have used them, as they take up a lot of space.
 
 def randomIndexesInDfs(dfs):
     randomNumberInDfsLen = list(range(len(dfs.index)))
@@ -70,9 +67,7 @@ def createBlackAndWhiteImg(inFile, outFile):
     plt.imsave(outFile, img, cmap=cmap)
 
 def blackAndWhiteColorMap():
-    cmap = colors.ListedColormap(['black', 'white'])
-    bounds=[0,6,10]
-    colors.BoundaryNorm(bounds, cmap.N)
+    cmap = colors.ListedColormap(['black', 'black', 'black', 'white', 'white'])
     return cmap
 
 def publishToKafkaTopic(locationName, geoPosition, date, imageName):
@@ -82,8 +77,8 @@ def publishToKafkaTopic(locationName, geoPosition, date, imageName):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Scrape Sentinel Satellite Imagery based on list of positions (lat, lon), and metadata.')
-    parser.add_argument('--days', type=int, default=None, help='Days to scrape for')
-    parser.add_argument('--user', type=str, default="nikolai.damm", help="Cupernicus username")
-    parser.add_argument('--pass', type=str, default="fywfuP-qekfut-xomki3", help="Cupernicus password")
+    parser.add_argument('--days', type=int, default=7, help='Days to scrape for')
+    parser.add_argument('--username', type=str, default="nikolai.damm", help="Cupernicus username")
+    parser.add_argument('--password', type=str, default="fywfuP-qekfut-xomki3", help="Cupernicus password")
     args = parser.parse_args()
     scrape(args)
