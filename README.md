@@ -26,3 +26,14 @@ A service capable of downloading images from the Sentinel Sattelite given a posi
 ### WebApi
 
 The WebApi project is a simple .NET-6.0 backend project with an API to communicate to our Kafka and Hadoop processing pipeline. Swagger is enabled by default.
+
+### Docker Swarm
+
+- Hadoop
+- Kafka
+
+Connect to kafka with:
+http://135.181.80.186:8080/brokers (Kowl webui)
+nuremberg.faurskov.dev:9092
+falkenstein.faurskov.dev:9092
+helsinki.faurskov.dev:9092
