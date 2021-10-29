@@ -1,5 +1,4 @@
-from osgeo import gdal
-import sentinel2loader as sl2
+import sentinel2loader_lib as sl2
 from shapely.geometry import Polygon
 import pandas as pd
 from datetime import date, timedelta
@@ -39,7 +38,7 @@ def scrape(args):
                 os.mkdir("processed")
             if(not os.path.isfile(imagePath)): #We only want create and publish new images.
                 createBlackAndWhiteImg(geoTiff, imagePath)
-                #publishToKafkaTopic(locationName, [lon, lat], geoTiffDate, imageName)
+                publishToKafkaTopic(locationName, [lon, lat], geoTiffDate, imageName)
             os.remove(geoTiff) # We remove tmp files after they are used
         if(os.path.exists("downloads")):
             shutil.rmtree("downloads") # We have to cleanup cached products when we have used them, as they take up a lot of space.
@@ -73,7 +72,7 @@ def blackAndWhiteColorMap():
 def publishToKafkaTopic(locationName, geoPosition, date, imageName):
     image_bytes = open(f"processed/{imageName}", "rb").read()
     producer = KafkaProducer(bootstrap_servers='helsinki.faurskov.dev:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-    producer.send('images', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes })
+    producer.send('images_test_topic', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes })
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Scrape Sentinel Satellite Imagery based on list of positions (lat, lon), and metadata.')
