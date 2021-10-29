@@ -2,8 +2,10 @@ name: Publish SentinelScraper to DockerHub
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - "src/SentinelScraper/**"
+      - "src/SentinelNDWIScraper/**"
 
 jobs:
   push_to_registry:

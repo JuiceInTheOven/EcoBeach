@@ -1,6 +1,12 @@
 name: Build and test webapi
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - "src/WebApi/**"
+  pull_request:
+    paths:
+      - "src/WebApi/**"
 
 env:
   DOTNET_VERSION: '6.0.x'
