@@ -4,9 +4,11 @@ on:
   push:
     paths:
       - "report/**"
+      - ".github/workflows/build-latex.yml"
   pull_request:
     paths:
       - "report/**"
+      - ".github/workflows/build-latex.yml"
 
 jobs:
   build-latex:

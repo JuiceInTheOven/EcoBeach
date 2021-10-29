@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "src/SentinelNDWIScraper/**"
+      - ".github/workflows/publish-scraper-to-dockerhub.yml"
 
 jobs:
   push_to_registry:
