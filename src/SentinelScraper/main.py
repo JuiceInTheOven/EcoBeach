@@ -53,11 +53,10 @@ def createSearchArea(lon, lat, size):
     # Creates a small rectangle boundary box around a position, where the position is at the center of the rectangle.
     width = size/100
     height = width/2
-    numberOfDecimals = 5
-    topLeftCorner = (round(lon-width, numberOfDecimals), round(lat+height,numberOfDecimals))
-    bottomLeftCorner = (round(lon-width,numberOfDecimals), round(lat-height,numberOfDecimals))
-    bottomRightCorner = (round(lon+width,numberOfDecimals), round(lat-height,numberOfDecimals))
-    topRightCorner = (round(lon+width,numberOfDecimals), round(lat+height,numberOfDecimals))
+    topLeftCorner = (lon-width, lat+height)
+    bottomLeftCorner = (lon-width, lat-height)
+    bottomRightCorner = (lon+width, lat-height)
+    topRightCorner = (lon+width, lat+height)
 
     return Polygon([topLeftCorner, bottomLeftCorner,
                 bottomRightCorner, topRightCorner, topLeftCorner])
@@ -68,13 +67,13 @@ def createBlackAndWhiteImg(inFile, outFile):
     plt.imsave(outFile, img, cmap=cmap)
 
 def blackAndWhiteColorMap():
-    cmap = colors.ListedColormap(['black', 'black', 'black', 'white', 'white'])
+    cmap = colors.ListedColormap(['black', 'black', 'black', 'white', 'white']) # value 3/5 = 0.68 
     return cmap
 
 def publishToKafkaTopic(locationName, geoPosition, date, imageName):
     image_bytes = open(f"processed/{imageName}", "rb").read()
     producer = KafkaProducer(bootstrap_servers='helsinki.faurskov.dev:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-    producer.send('ndwi_images', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes })
+    producer.send('images', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes })
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Scrape Sentinel Satellite Imagery based on list of positions (lat, lon), and metadata.')
