@@ -71,8 +71,8 @@ def blackAndWhiteColorMap():
 
 def publishToKafkaTopic(locationName, geoPosition, date, imageName):
     image_bytes = open(f"processed/{imageName}", "rb").read()
-    producer = KafkaProducer(bootstrap_servers='helsinki.faurskov.dev:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-    producer.send('images_test_topic', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes })
+    producer = KafkaProducer(bootstrap_servers='helsinki.faurskov.dev:9092', api_version=(0,10,2), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+    producer.send('images', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes })
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Scrape Sentinel Satellite Imagery based on list of positions (lat, lon), and metadata.')
