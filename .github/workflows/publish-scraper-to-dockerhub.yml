@@ -1,4 +1,4 @@
-name: Publish SentinelScraper to DockerHub
+name: Publish SentinelNDWIScraper to DockerHub
 
 on:
   push:
@@ -30,6 +30,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@latest
         with:
-          context: ./src/SentinelScraper/
+          context: ./src/SentinelNDWIScraper/
           push: true
           tags: latest
