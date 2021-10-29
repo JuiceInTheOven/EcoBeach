@@ -1,0 +1,32 @@
+@startuml
+agent SentinelScraper
+queue KafkaStream
+agent ImageAnalyzer
+circle KafkaConnect
+database SQL
+agent WebAPI
+agent AndroidApp
+actor Users
+database HDFS
+
+SentinelScraper --> KafkaStream
+
+SentinelScraper --> HDFS
+
+ImageAnalyzer --> HDFS
+
+ImageAnalyzer <-- KafkaStream
+
+ImageAnalyzer --> KafkaStream
+
+KafkaStream --> KafkaConnect
+
+KafkaConnect --> SQL
+
+SQL <-- WebAPI
+
+WebAPI <-- AndroidApp
+
+Users --> AndroidApp
+
+@enduml
