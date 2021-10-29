@@ -13,7 +13,8 @@ RUN apt-get install -y libgeos-dev libproj-dev
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY main.py .
-COPY sentinel2loader.py .
+COPY scraper.py .
+COPY DK_beaches.xlsx .
+COPY sentinel2loader_lib.py .
 
-CMD [ "python", "main.py"]
+CMD [ "python", "scraper.py"]

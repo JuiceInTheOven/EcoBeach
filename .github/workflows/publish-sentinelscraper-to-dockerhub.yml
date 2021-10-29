@@ -1,0 +1,33 @@
+name: Publish SentinelScraper to DockerHub
+
+on:
+  push:
+    paths:
+      - "src/SentinelScraper/**"
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@latest
+        with:
+          username: ${{ secrets.NIKOLAI_DOCKER_USERNAME }}
+          password: ${{ secrets.NIKOLAI_DOCKER_PASSWORD }}
+      
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@latest
+        with:
+          images: nikolaidamm/sentinel-ndwi-scraper
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@latest
+        with:
+          context: ./src/SentinelScraper/
+          push: true
+          tags: latest

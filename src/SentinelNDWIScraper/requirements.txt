@@ -1,0 +1,10 @@
+gdal
+geopandas
+rasterio
+shapely
+cartopy
+opencv-python
+openpyxl
+sentinelsat
+kafka-python
+hdfs
