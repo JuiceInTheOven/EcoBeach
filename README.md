@@ -32,8 +32,12 @@ The WebApi project is a simple .NET-6.0 backend project with an API to communica
 - Hadoop
 - Kafka
 
-Connect to kafka with:
-http://135.181.80.186:8080/brokers (Kowl webui)
-nuremberg.faurskov.dev:9092
-falkenstein.faurskov.dev:9092
-helsinki.faurskov.dev:9092
+Kafka Servers:
+
+- helsinki.faurskov.dev:9092 (Most likely the master)
+- nuremberg.faurskov.dev:9092
+- falkenstein.faurskov.dev:9092
+
+Dev services:
+
+- <http://135.181.80.186:8080/brokers> (Kowl webui)
