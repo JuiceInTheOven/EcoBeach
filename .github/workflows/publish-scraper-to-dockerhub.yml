@@ -21,13 +21,7 @@ jobs:
         with:
           username: ${{ secrets.NIKOLAI_DOCKER_USERNAME }}
           password: ${{ secrets.NIKOLAI_DOCKER_PASSWORD }}
-      
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@latest
-        with:
-          images: nikolaidamm/sentinel-ndwi-scraper
-      
+            
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
