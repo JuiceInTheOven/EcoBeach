@@ -1,3 +1,4 @@
+from sys import api_version
 import sentinel2loader_lib as sl2
 from shapely.geometry import Polygon
 import pandas as pd
@@ -12,6 +13,7 @@ import json
 import logging
 from kafka import KafkaProducer
 import argparse
+import base64
 
 def scrape(args):
     user = args.username
@@ -27,9 +29,7 @@ def scrape(args):
         lat = dfs.iloc[ri][7]
 
         today = date.today()
-        week_ago = today - timedelta(days=7)
-        area = createSearchArea(lon, lat, 2)
-        geoTiffs = sl.getRegionHistory(area, 'NDWI2', '10m', str(today - timedelta(days=args.days)), str(today), daysStep=1)
+        geoTiffs = sl.getRegionHistory(createSearchArea(lon, lat, 2), 'NDWI2', '10m', str(today - timedelta(days=args.days)), str(today), daysStep=1)
         for geoTiff in geoTiffs:  
             geoTiffDate = geoTiff.split("-NDWI2")[0].split("tmp/")[1] # gets the date part from the geoTiff path
             imageName = f"{locationName}-{geoTiffDate}.png"
@@ -71,13 +71,18 @@ def blackAndWhiteColorMap():
 
 def publishToKafkaTopic(locationName, geoPosition, date, imageName):
     image_bytes = open(f"processed/{imageName}", "rb").read()
-    producer = KafkaProducer(bootstrap_servers='helsinki.faurskov.dev:9092', api_version=(0,10,2), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-    producer.send('images', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes })
+    image_bytes_base64 = base64.b64encode(image_bytes)
+    producer = KafkaProducer(bootstrap_servers='helsinki.faurskov.dev:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+    producer.send('images_test_topic', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes_base64.decode() })
 
-if __name__ == '__main__':
+def parseArguments():
     parser = argparse.ArgumentParser(description='Scrape Sentinel Satellite Imagery based on list of positions (lat, lon), and metadata.')
     parser.add_argument('--days', type=int, default=7, help='Days to scrape for')
     parser.add_argument('--username', type=str, default="nikolai.damm", help="Cupernicus username")
     parser.add_argument('--password', type=str, default="fywfuP-qekfut-xomki3", help="Cupernicus password")
     args = parser.parse_args()
+    return args
+
+if __name__ == '__main__':
+    args = parseArguments()
     scrape(args)
