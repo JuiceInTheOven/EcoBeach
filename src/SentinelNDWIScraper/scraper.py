@@ -1,4 +1,3 @@
-from sys import api_version
 import sentinel2loader_lib as sl2
 from shapely.geometry import Polygon
 import pandas as pd
@@ -30,7 +29,7 @@ def scrape(args):
         lat = dfs.iloc[ri][7]
 
         today = date.today()
-        geoTiffs = sl.getRegionHistory(createSearchArea(lon, lat, 2), 'NDWI2', '10m', str(today - timedelta(days=args.days)), str(today), daysStep=3)
+        geoTiffs = sl.getRegionHistory(createSearchArea(lon, lat, 2), 'NDWI2', '10m', str(today - timedelta(days=args.days)), str(today), daysStep=1)
         for geoTiff in geoTiffs:  
             geoTiffDate = geoTiff.split("-NDWI2")[0].split("tmp/")[1] # gets the date part from the geoTiff path
             imageName = f"{countrycode}-{locationName}-{geoTiffDate}.png"
