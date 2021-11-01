@@ -20,11 +20,11 @@ def scrape(args):
     passw = args.password
 
     sl = sl2.Sentinel2Loader('downloads', user, passw, cloudCoverage=(0,1), loglevel=logging.INFO)
-    dfs = pd.read_excel("DK_beaches.xlsx", sheet_name="DK_BW2020")
+    dfs = pd.read_excel(f"{args.countrycode}.xlsx", sheet_name=args.countrycode)
 
     # We shuffle the possible indexes, to randomize which location is queried first, to use the 20 LTA retries on different products.
     for ri in randomIndexesInDfs(dfs):
-        locationName = dfs.iloc[ri][3]
+        locationName = dfs.iloc[ri][3].lower().replace('.', '')
         lon = dfs.iloc[ri][6]
         lat = dfs.iloc[ri][7]
 
@@ -38,7 +38,7 @@ def scrape(args):
                 os.mkdir("processed")
             if(not os.path.isfile(imagePath)): #We only want create and publish new images.
                 createBlackAndWhiteImg(geoTiff, imagePath)
-                publishToKafkaTopic(locationName, [lon, lat], geoTiffDate, imageName)
+                publishToKafkaTopic(args.kafka_servers, locationName, [lon, lat], geoTiffDate, imageName)
             os.remove(geoTiff) # We remove tmp files after they are used
         if(os.path.exists("downloads")):
             shutil.rmtree("downloads") # We have to cleanup cached products when we have used them, as they take up a lot of space.
@@ -69,15 +69,17 @@ def blackAndWhiteColorMap():
     cmap = colors.ListedColormap(['black', 'black', 'black', 'white', 'white']) # value 3/5 = 0.68 
     return cmap
 
-def publishToKafkaTopic(locationName, geoPosition, date, imageName):
+def publishToKafkaTopic(kafka_servers, locationName, geoPosition, date, imageName):
     image_bytes = open(f"processed/{imageName}", "rb").read()
     image_bytes_base64 = base64.b64encode(image_bytes)
-    producer = KafkaProducer(bootstrap_servers='helsinki.faurskov.dev:9092', value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-    producer.send('images_test_topic', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes_base64.decode() })
+    producer = KafkaProducer(bootstrap_servers=kafka_servers, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+    producer.send('ndwi_images_test', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes_base64.decode() })
 
 def parseArguments():
     parser = argparse.ArgumentParser(description='Scrape Sentinel Satellite Imagery based on list of positions (lat, lon), and metadata.')
     parser.add_argument('--days', type=int, default=7, help='Days to scrape for')
+    parser.add_argument('--countrycode', type=str, default="dk", help='The country to scrape data for')
+    parser.add_argument('--kafka_servers', type=str, default="helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097", help='The kafka servers to produce messages to (comma separated)')
     parser.add_argument('--username', type=str, default="nikolai.damm", help="Cupernicus username")
     parser.add_argument('--password', type=str, default="fywfuP-qekfut-xomki3", help="Cupernicus password")
     args = parser.parse_args()
