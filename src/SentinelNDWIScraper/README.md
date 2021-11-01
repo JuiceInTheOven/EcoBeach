@@ -27,6 +27,8 @@ or
 The script supports the following 3 optional arguments:
 
 - `--days 365` scrapes for imagery for the last year. Defaults to 7 days.
+- `--countrycode dk` scrapes danish beaches, can support others by moving their excel sheet to beach_datasets and renaming it to `{countrycode}.xlsx` and renaming the sheet to the `countrycode`.
+- `-- kafka_servers` sets the kafka servers to publish messages to.
 - `--username someUser` username for Cupernicus. Defaults to Nikolai's username.
 - `--password ****` passford for Cupernicus. Defaults to Nikolai's password.
 
