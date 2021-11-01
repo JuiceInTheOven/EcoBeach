@@ -24,7 +24,8 @@ def scrape(args):
 
     # We shuffle the possible indexes, to randomize which location is queried first, to use the 20 LTA retries on different products.
     for ri in randomIndexesInDfs(dfs):
-        locationName = dfs.iloc[ri][3].lower().replace('.', '')
+        countrycode = dfs.iloc[ri][0]
+        locationName = dfs.iloc[ri][3].title().replace('.', '')
         lon = dfs.iloc[ri][6]
         lat = dfs.iloc[ri][7]
 
@@ -32,7 +33,7 @@ def scrape(args):
         geoTiffs = sl.getRegionHistory(createSearchArea(lon, lat, 2), 'NDWI2', '10m', str(today - timedelta(days=args.days)), str(today), daysStep=1)
         for geoTiff in geoTiffs:  
             geoTiffDate = geoTiff.split("-NDWI2")[0].split("tmp/")[1] # gets the date part from the geoTiff path
-            imageName = f"{locationName}-{geoTiffDate}.png"
+            imageName = f"{countrycode}-{locationName}-{geoTiffDate}.png"
             imagePath = f"processed/{imageName}"
             if(not os.path.exists("processed")):
                 os.mkdir("processed")
