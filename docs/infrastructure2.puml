@@ -1,0 +1,39 @@
+@startuml
+node SentinelScraper
+queue KafkaStream
+node ImageAnalyzer
+node WebAPI
+node AndroidApp
+circle KafkaConnectSQL
+circle KafkaConnectHDFS
+actor Users
+database SQL
+storage HDFS {
+    database HBase
+}
+
+SentinelScraper --> KafkaStream
+
+ImageAnalyzer <-- KafkaStream
+
+ImageAnalyzer --> KafkaStream
+
+KafkaStream --> KafkaConnectSQL
+
+KafkaStream -> KafkaConnectHDFS
+
+KafkaConnectSQL --> SQL
+
+KafkaConnectHDFS --> HBase
+
+HBase -up-> KafkaConnectHDFS
+
+KafkaConnectHDFS -left-> KafkaStream
+
+SQL <-- WebAPI
+
+WebAPI <-- AndroidApp
+
+Users -up-> AndroidApp
+
+@enduml
