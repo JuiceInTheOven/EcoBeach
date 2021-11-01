@@ -20,7 +20,7 @@ def scrape(args):
     passw = args.password
 
     sl = sl2.Sentinel2Loader('downloads', user, passw, cloudCoverage=(0,1), loglevel=logging.INFO)
-    dfs = pd.read_excel(f"{args.countrycode}.xlsx", sheet_name=args.countrycode)
+    dfs = pd.read_excel(f"beach_datasets/{args.countrycode}.xlsx", sheet_name=args.countrycode)
 
     # We shuffle the possible indexes, to randomize which location is queried first, to use the 20 LTA retries on different products.
     for ri in randomIndexesInDfs(dfs):
