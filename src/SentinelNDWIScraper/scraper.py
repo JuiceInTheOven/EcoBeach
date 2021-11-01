@@ -23,7 +23,7 @@ def scrape(args):
 
     # We shuffle the possible indexes, to randomize which location is queried first, to use the 20 LTA retries on different products.
     for ri in randomIndexesInDfs(dfs):
-        countrycode = dfs.iloc[ri][0]
+        countryCode = dfs.iloc[ri][0]
         locationName = dfs.iloc[ri][3].title().replace('.', '')
         lon = dfs.iloc[ri][6]
         lat = dfs.iloc[ri][7]
@@ -32,13 +32,13 @@ def scrape(args):
         geoTiffs = sl.getRegionHistory(createSearchArea(lon, lat, 2), 'NDWI2', '10m', str(today - timedelta(days=args.days)), str(today), daysStep=1)
         for geoTiff in geoTiffs:  
             geoTiffDate = geoTiff.split("-NDWI2")[0].split("tmp/")[1] # gets the date part from the geoTiff path
-            imageName = f"{countrycode}-{locationName}-{geoTiffDate}.png"
+            imageName = f"{countryCode}-{locationName}-{geoTiffDate}.png"
             imagePath = f"processed/{imageName}"
             if(not os.path.exists("processed")):
                 os.mkdir("processed")
             if(not os.path.isfile(imagePath)): #We only want create and publish new images.
                 createBlackAndWhiteImg(geoTiff, imagePath)
-                publishToKafkaTopic(args.kafka_servers, locationName, [lon, lat], geoTiffDate, imageName)
+                publishToKafkaTopic(args.kafka_servers, countryCode, locationName, [lon, lat], geoTiffDate, imageName)
             os.remove(geoTiff) # We remove tmp files after they are used
         if(os.path.exists("downloads")):
             shutil.rmtree("downloads") # We have to cleanup cached products when we have used them, as they take up a lot of space.
@@ -69,11 +69,11 @@ def blackAndWhiteColorMap():
     cmap = colors.ListedColormap(['black', 'black', 'black', 'white', 'white']) # value 3/5 = 0.68 
     return cmap
 
-def publishToKafkaTopic(kafka_servers, locationName, geoPosition, date, imageName):
+def publishToKafkaTopic(kafka_servers, countryCode, locationName, geoPosition, date, imageName):
     image_bytes = open(f"processed/{imageName}", "rb").read()
     image_bytes_base64 = base64.b64encode(image_bytes)
     producer = KafkaProducer(bootstrap_servers=kafka_servers, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
-    producer.send('ndwi_images_test', {"locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes_base64.decode() })
+    producer.send('ndwi_images', {"countryCode": countryCode, "locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes_base64.decode() })
 
 def parseArguments():
     parser = argparse.ArgumentParser(description='Scrape Sentinel Satellite Imagery based on list of positions (lat, lon), and metadata.')
