@@ -24,7 +24,7 @@ def scrape(args):
     # We shuffle the possible indexes, to randomize which location is queried first, to use the 20 LTA retries on different products.
     for ri in randomIndexesInDfs(dfs):
         countryCode = dfs.iloc[ri][0]
-        locationName = dfs.iloc[ri][3].title().replace('.', '')
+        locationName = dfs.iloc[ri][3].replace(".", "").replace(" ", "")
         lon = dfs.iloc[ri][6]
         lat = dfs.iloc[ri][7]
 
