@@ -3,18 +3,31 @@ version: "3.8"
 services:
   sentinel-ndwi-scraper-dk:
     image: nikolaidamm/sentinel-ndwi-scraper:latest
-    command: --countrycode dk
+    command: --days 1095 --countrycode dk --kafka_servers helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097
     restart: always
+    volumes:
+      - ndwi-scraper-data:processed
   
   sentinel-ndwi-scraper-se:
     image: nikolaidamm/sentinel-ndwi-scraper:latest
-    command: --countrycode se
+    command: --days 1095 --countrycode se --kafka_servers helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097
     restart: always
+    volumes:
+      - ndwi-scraper-data:processed
   
-  sentinel-ndwi-scraper-no:
+  sentinel-ndwi-scraper-de:
     image: nikolaidamm/sentinel-ndwi-scraper:latest
-    command: --countrycode se
+    command: --days 1095 --countrycode de --kafka_servers helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097
     restart: always
+    volumes:
+      - ndwi-scraper-data:processed
+
+  sentinel-ndwi-scraper-uk:
+    image: nikolaidamm/sentinel-ndwi-scraper:latest
+    command: --days 1095 --countrycode uk --kafka_servers helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097
+    restart: always
+    volumes:
+      - ndwi-scraper-data:processed
 
   namenode:
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
@@ -139,6 +152,7 @@ services:
       
 
 volumes:
+  ndwi-scraper-data:
   datanode:
   namenode:
   kafka:
