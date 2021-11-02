@@ -1,0 +1,144 @@
+version: "3.8"
+
+services:
+  sentinel-ndwi-scraper-dk:
+    image: nikolaidamm/sentinel-ndwi-scraper:latest
+    command: --countrycode dk
+    restart: always
+  
+  sentinel-ndwi-scraper-se:
+    image: nikolaidamm/sentinel-ndwi-scraper:latest
+    command: --countrycode se
+    restart: always
+  
+  sentinel-ndwi-scraper-no:
+    image: nikolaidamm/sentinel-ndwi-scraper:latest
+    command: --countrycode se
+    restart: always
+
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    ports:
+      - "9870:9870"
+    volumes:
+      - namenode:/haddop/dfs/name
+    env_file:
+      - ./hadoop.env
+    environment:
+      - CLUSTER_NAME=master
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-helsinki
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    volumes:
+      - datanode:/hadoop/dfs/data
+    env_file:
+      - ./hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000"
+    deploy:
+      mode: global
+  hue:
+    image: gethue/hue:latest
+    ports: 
+      - "8888:8888"
+    volumes: 
+      - ./hue.ini:/usr/share/hue/desktop/conf/z-hue.ini
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-helsinki
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.2.1
+    ports:
+      - 2181:2181
+      - "8081:8080"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-helsinki
+  kafka-helsinki:
+    image: confluentinc/cp-kafka:6.2.1
+    ports:
+      - 9093:9093
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_PARTITION_ASSIGNMENT_STRATEGY: org.apache.kafka.clients.consumer.RoundRobinAssignor
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: CLIENT://:9092,EXTERNAL://:9093
+      KAFKA_ADVERTISED_LISTENERS: CLIENT://kafka-helsinki:9092,EXTERNAL://helsinki.faurskov.dev:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: CLIENT
+    depends_on:
+      - "zookeeper"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-helsinki
+  kafka-falkenstein:
+    image: confluentinc/cp-kafka:6.2.1
+    ports:
+      - 9095:9095
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_PARTITION_ASSIGNMENT_STRATEGY: org.apache.kafka.clients.consumer.RoundRobinAssignor
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: CLIENT://:9094,EXTERNAL://:9095
+      KAFKA_ADVERTISED_LISTENERS: CLIENT://kafka-falkenstein:9094,EXTERNAL://falkenstein.faurskov.dev:9095
+      KAFKA_INTER_BROKER_LISTENER_NAME: CLIENT
+    depends_on:
+      - "zookeeper"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-falkenstein
+  kafka-nuremberg:
+    image: confluentinc/cp-kafka:6.2.1
+    ports:
+      - 9097:9097
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_PARTITION_ASSIGNMENT_STRATEGY: org.apache.kafka.clients.consumer.RoundRobinAssignor
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: CLIENT://:9096,EXTERNAL://:9097
+      KAFKA_ADVERTISED_LISTENERS: CLIENT://kafka-nuremberg:9096,EXTERNAL://nuremberg.faurskov.dev:9097
+      KAFKA_INTER_BROKER_LISTENER_NAME: CLIENT
+    depends_on:
+      - "zookeeper"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-nuremberg
+  kowl:
+    image: quay.io/cloudhut/kowl:master
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_BROKERS: kafka-helsinki:9092,kafka-falkenstein:9094,kafka-nuremberg:9096
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-helsinki
+      
+
+volumes:
+  datanode:
+  namenode:
+  kafka:
