@@ -22,26 +22,16 @@ def scrape(args):
     dfs = pd.read_excel(f"beach_datasets/{args.countrycode}.xlsx", sheet_name=args.countrycode)
 
     # We shuffle the possible indexes, to randomize which location is queried first, to use the 20 LTA retries on different products.
-    for ri in randomIndexesInDfs(dfs):
+    for ri in range(10):#randomIndexesInDfs(dfs):
         countryCode = dfs.iloc[ri][0]
         locationName = dfs.iloc[ri][3].replace(".", "").replace(" ", "")
         lon = dfs.iloc[ri][6]
         lat = dfs.iloc[ri][7]
 
         today = date.today()
-        geoTiffs = sl.getRegionHistory(createSearchArea(lon, lat, 2), 'NDWI2', '10m', str(today - timedelta(days=args.days)), str(today), daysStep=1)
-        for geoTiff in geoTiffs:  
-            geoTiffDate = geoTiff.split("-NDWI2")[0].split("tmp/")[1] # gets the date part from the geoTiff path
-            imageName = f"{countryCode}-{locationName}-{geoTiffDate}.png"
-            imagePath = f"processed/{imageName}"
-            if(not os.path.exists("processed")):
-                os.mkdir("processed")
-            if(not os.path.isfile(imagePath)): #We only want create and publish new images.
-                createBlackAndWhiteImg(geoTiff, imagePath)
-                publishToKafkaTopic(args.kafka_servers, countryCode, locationName, [lon, lat], geoTiffDate, imageName)
-            os.remove(geoTiff) # We remove tmp files after they are used
-        if(os.path.exists("downloads")):
-            shutil.rmtree("downloads") # We have to cleanup cached products when we have used them, as they take up a lot of space.
+        geoTiffImages = sl.getRegionHistory(countryCode, locationName, createSearchArea(lon, lat, 2), 'NDWI2', '10m', str(today - timedelta(days=args.days)), str(today))
+        processGeoTiffImages(args, countryCode, locationName, lon, lat, geoTiffImages)
+        removeDownloadFolder() 
 
 def randomIndexesInDfs(dfs):
     randomNumberInDfsLen = list(range(len(dfs.index)))
@@ -60,6 +50,30 @@ def createSearchArea(lon, lat, size):
     return Polygon([topLeftCorner, bottomLeftCorner,
                 bottomRightCorner, topRightCorner, topLeftCorner])
 
+def processGeoTiffImages(args, countryCode, locationName, lon, lat, geoTiffImages):
+    for geoTiffImage in geoTiffImages:  
+        date = geoTiffImage.split("-NDWI2")[0].split("tmp/")[1] # gets the date part from the geoTiff path
+        imageName = f"{countryCode}-{locationName}-{date}.png"
+        imagePath = f"processed/{countryCode}/{imageName}"
+        makeCountryCodeProcessingFolder(countryCode)
+        processImage(args, countryCode, locationName, lon, lat, geoTiffImage, date, imageName, imagePath)
+        removeProcessedImage(geoTiffImage)
+
+def makeCountryCodeProcessingFolder(countryCode):
+    if(not countryCodeProcessingFolderExists(countryCode)):
+        os.makedirs(f"processed/{countryCode}")
+
+def countryCodeProcessingFolderExists(countryCode):
+    return os.path.exists(f"processed/{countryCode}")
+
+def processImage(args, countryCode, locationName, lon, lat, geoTiff, geoTiffDate, imageName, imagePath):
+    if(not processedImageExists(imagePath)): #We only want create and publish new images.
+        createBlackAndWhiteImg(geoTiff, imagePath)
+        publishToKafkaTopic(args.kafka_servers, countryCode, locationName, [lon, lat], geoTiffDate, imageName)
+
+def processedImageExists(imagePath):
+    return os.path.isfile(imagePath)
+
 def createBlackAndWhiteImg(inFile, outFile):
     img = cv2.imread(inFile, -1) #MatPlotLib does not work with Float16 .tiff files, so we use OpenCV to read the .tiff file
     cmap = blackAndWhiteColorMap()
@@ -70,10 +84,20 @@ def blackAndWhiteColorMap():
     return cmap
 
 def publishToKafkaTopic(kafka_servers, countryCode, locationName, geoPosition, date, imageName):
-    image_bytes = open(f"processed/{imageName}", "rb").read()
+    image_bytes = open(f"processed/{countryCode}/{imageName}", "rb").read()
     image_bytes_base64 = base64.b64encode(image_bytes)
     producer = KafkaProducer(bootstrap_servers=kafka_servers, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
     producer.send('ndwi_images', {"countryCode": countryCode, "locationName": locationName, "geoPosition": {"lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "imageName": imageName, "image_bytes": image_bytes_base64.decode() })
+
+def removeProcessedImage(geoTiffImage):
+    os.remove(geoTiffImage)
+
+def removeDownloadFolder():
+    if(downloadFolderExists()):
+        shutil.rmtree("downloads")
+
+def downloadFolderExists():
+    return os.path.exists("downloads")
 
 def parseArguments():
     parser = argparse.ArgumentParser(description='Scrape Sentinel Satellite Imagery based on list of positions (lat, lon), and metadata.')
