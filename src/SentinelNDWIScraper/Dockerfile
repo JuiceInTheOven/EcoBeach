@@ -14,7 +14,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY scraper.py .
-COPY beach_datasets .
+COPY beach_datasets/ beach_datasets/
 COPY sentinel2loader_lib.py .
 
 ENTRYPOINT [ "python", "scraper.py"]
