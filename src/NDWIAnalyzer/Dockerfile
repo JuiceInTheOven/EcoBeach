@@ -1,9 +1,10 @@
 FROM bde2020/spark-python-template:3.1.1-hadoop3.2
 
-ONBUILD COPY requirements.txt /app/
-ONBUILD RUN pip3 install -r /app/requirements.txt
+COPY README.md .
+ONBUILD COPY requirements.txt .
+ONBUILD RUN pip3 install -r requirements.txt
 	  
-ONBUILD COPY analyzer.py /app/
+ONBUILD COPY analyzer.py .
 
-ENV SPARK_APPLICATION_PYTHON_LOCATION /app/analyzer.py
-ENV SPARK_SUBMIT_ARGS "--packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2"
+ENV SPARK_APPLICATION_PYTHON_LOCATION /analyzer.py
+ENV SPARK_SUBMIT_ARGS "--packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.0"
