@@ -11,30 +11,28 @@ import com.google.android.gms.maps.model.Marker
 
 class CustomMarker (context: Context) : GoogleMap.InfoWindowAdapter {
     override fun getInfoWindow(marker: Marker?): View {
-        //TODO("Not yet implemented")
-        rendowWindowText(marker, mWindow)
+        setWindowTexts(marker, mWindow)
         return mWindow
     }
 
     override fun getInfoContents(marker: Marker?): View {
-        //TODO("Not yet implemented")
-        rendowWindowText(marker, mWindow)
+        setWindowTexts(marker, mWindow)
         return mWindow
     }
-
 
     var mContext = context
     var mWindow = (context as Activity).layoutInflater.inflate(R.layout.infowindowlayout, null)
 
-    private fun rendowWindowText(marker: Marker?, view: View){
+    private fun setWindowTexts(marker: Marker?, view: View){
+        //val image = view.findViewById<ImageView>(R.id.info_image)
+        val title = view.findViewById<TextView>(R.id.info_title)
+        val lat = view.findViewById<TextView>(R.id.info_lat)
+        val lng = view.findViewById<TextView>(R.id.info_lng)
 
-        //val image = view.findViewById<ImageView>(R.id.imageView1)
-        val tvTitle = view.findViewById<TextView>(R.id.textView1)
-        val tvSnippet = view.findViewById<TextView>(R.id.textView2)
+        var latLng = marker!!.snippet.split(',')
 
-        tvTitle.text = marker!!.title
-        tvSnippet.text = marker!!.snippet
-
-
+        title.text = marker!!.title
+        lat.text = "Lat: ${latLng[1]}" //marker!!.snippet
+        lng.text = "Lng: ${latLng[2]}"
     }
 }

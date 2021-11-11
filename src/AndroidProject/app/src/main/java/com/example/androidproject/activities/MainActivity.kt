@@ -21,6 +21,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import android.content.Intent
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -41,17 +42,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         getLastKnownLocation()
     }
 
-    /*
-    TODO: Delete this shit
-    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
-        return ContextCompat.getDrawable(context, vectorResId)?.run {
-            setBounds(0, 0, intrinsicWidth, intrinsicHeight)
-            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
-            draw(Canvas(bitmap))
-            BitmapDescriptorFactory.fromBitmap(bitmap)
-        }
-    }*/
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -65,16 +55,27 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap = googleMap
 
         addBeachesToMap()
-
         mMap.setInfoWindowAdapter(CustomMarker(this))
-
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 10f))
 
+        mMap.setOnInfoWindowClickListener { marker ->
+            if(marker.title != "You are here :)"){
+                val intent = Intent(this, BeachActivity::class.java).apply {
+                    val info = marker.snippet.split(',')
+
+                    putExtra("name", info[0])
+                    putExtra("lat", info[1])
+                    putExtra("lng", info[2])
+                    putExtra("change", info[3])
+                }
+                startActivity(intent)
+            }
+        }
     }
 
     private fun addBeachesToMap(){
         // Add a marker to the user's location and move the camera
-        mMap.addMarker(MarkerOptions().position(userLocation).title("You are here :)").snippet("hey there :D"))
+        mMap.addMarker(MarkerOptions().position(userLocation).title("You are here :)").snippet(",${userLocation.latitude},${userLocation.longitude},"))
 
         val beaches = mutableListOf<Beach>()
         beaches.add(Beach("Kerteminde Nordstrand", 55.4578631605276, 10.66580564769334, 0.0))
@@ -83,7 +84,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         beaches.forEach{ beach ->
             mMap.addMarker(MarkerOptions().position(LatLng(beach.Lat, beach.Lng)).title(beach.Name).icon(
-                BitmapDescriptorFactory.defaultMarker(green)))
+                BitmapDescriptorFactory.defaultMarker(green)).snippet(beach.toString()))
         }
     }
 

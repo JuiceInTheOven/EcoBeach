@@ -6,20 +6,28 @@
     android:background="#FFFFFF" >
 
     <ImageView
-        android:id="@+id/imageView1"
+        android:id="@+id/info_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_beach"
         android:background="#00FA9A"/>
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/info_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:textStyle="bold"
+        android:textSize="16dp"/>
+
+    <TextView
+        android:id="@+id/info_lat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="TextView" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/info_lng"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="TextView" />
