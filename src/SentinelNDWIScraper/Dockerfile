@@ -17,4 +17,4 @@ COPY scraper.py .
 COPY beach_datasets .
 COPY sentinel2loader_lib.py .
 
-CMD [ "python", "scraper.py"]
+ENTRYPOINT [ "python", "scraper.py"]
