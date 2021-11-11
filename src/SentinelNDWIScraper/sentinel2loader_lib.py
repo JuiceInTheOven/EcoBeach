@@ -257,7 +257,7 @@ class Sentinel2Loader:
         return tmp_file
 
 
-    def getRegionHistory(self, geoPolygon, bandOrIndexName, resolution, dateFrom, dateTo, daysStep=5, ignoreMissing=True, minVisibleLand=0, visibleLandPolygon=None, keepVisibleWithCirrus=False, interpolateMissingDates=False):
+    def getRegionHistory(self, countryCode, locationName, geoPolygon, bandOrIndexName, resolution, dateFrom, dateTo, daysStep=5, ignoreMissing=True, minVisibleLand=0, visibleLandPolygon=None, keepVisibleWithCirrus=False, interpolateMissingDates=False):
         """Gets a series of GeoTIFF files for a region for a specific band and resolution in a date range"""
         logger.info("Getting region history for band %s from %s to %s at %s" % (bandOrIndexName, dateFrom, dateTo, resolution))
         dateFromObj = datetime.strptime(dateFrom, '%Y-%m-%d')
@@ -275,8 +275,15 @@ class Sentinel2Loader:
             logger.debug(dateRef)
             dateRefStr = dateRef.strftime("%Y-%m-%d")
             regionFile = None
+            # Custom caching strategy - avoid all work on images we have already processed.
+            imageName = f"{countryCode}-{locationName}-{dateRefStr}.png"
+            imagePath = f"processed/{countryCode}/{imageName}"
+            if(os.path.isfile(imagePath)):
+                logger.info("The region history for band %s the %s at %s has already been processed. Skipping to next." % (bandOrIndexName, dateRefStr, resolution))
+                dateRef = dateRef + timedelta(days=daysStep)
+                continue
+            
             try:
-
                 cirrus = 0
                 if keepVisibleWithCirrus:
                     cirrus = 1
