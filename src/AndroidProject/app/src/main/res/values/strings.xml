@@ -1,3 +1,14 @@
 <resources>
-    <string name="app_name">AndroidProject</string>
+    <string name="app_name">EcoBeach</string>
+
+    <string-array name="distances">
+        <item>5 km</item>
+        <item>10 km</item>
+        <item>20 km</item>
+        <item>40 km</item>
+        <item>80 km</item>
+        <item>100 km</item>
+        <item>150 km</item>
+        <item>200 km</item>
+    </string-array>
 </resources>
