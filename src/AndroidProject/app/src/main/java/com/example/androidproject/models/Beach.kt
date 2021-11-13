@@ -12,8 +12,6 @@ class Beach(
     var Change: Double = change
 
     override fun toString(): String {
-        //return super.toString()
         return "$name,$lat,$lng,$change"
-        //return "$lat,$lng"
     }
 }

@@ -56,6 +56,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         addBeachesToMap()
         mMap.setInfoWindowAdapter(CustomMarker(this))
+
+        //move the camera to the user's location
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 10f))
 
         mMap.setOnInfoWindowClickListener { marker ->
@@ -74,7 +76,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun addBeachesToMap(){
-        // Add a marker to the user's location and move the camera
+        // Add a marker to the user's location
         mMap.addMarker(MarkerOptions().position(userLocation).title("You are here :)").snippet(",${userLocation.latitude},${userLocation.longitude},"))
 
         val beaches = mutableListOf<Beach>()
