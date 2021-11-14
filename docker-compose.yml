@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   namenode: #Master (metadata/chunk)
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
@@ -18,14 +16,14 @@ services:
       cscourse:
         ipv4_address: 172.202.0.12
 
-  datanode1: #Slave1
+  datanode: #Slave1
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
-    container_name: datanode1
+    container_name: datanode
     restart: always
     ports:
       - 9864:9864
     volumes:
-      - hadoop_datanode1:/hadoop/dfs/data
+      - hadoop_datanode:/hadoop/dfs/data
     environment:
       SERVICE_PRECONDITION: "namenode:9870"
     env_file:
@@ -33,38 +31,6 @@ services:
     networks:
       cscourse:
         ipv4_address: 172.202.0.13
-
-  datanode2: #Slave2
-    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
-    container_name: datanode2
-    restart: always
-    ports:
-      - 9865:9864
-    volumes:
-      - hadoop_datanode2:/hadoop/dfs/data
-    environment:
-      SERVICE_PRECONDITION: "namenode:9870"
-    env_file:
-      - ./hadoop.env
-    networks:
-      cscourse:
-        ipv4_address: 172.202.0.14
-
-  datanode3: #Slave3
-    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
-    container_name: datanode3
-    restart: always
-    ports:
-      - 9866:9864
-    volumes:
-      - hadoop_datanode3:/hadoop/dfs/data
-    environment:
-      SERVICE_PRECONDITION: "namenode:9870"
-    env_file:
-      - ./hadoop.env
-    networks:
-      cscourse:
-        ipv4_address: 172.202.0.15
 
   spark-master:
     image: bde2020/spark-master:3.1.1-hadoop3.2
@@ -77,9 +43,9 @@ services:
     networks:
       cscourse:
         ipv4_address: 172.202.0.9
-  spark-worker-1:
+  spark-worker:
     image: bde2020/spark-worker:3.1.1-hadoop3.2
-    container_name: spark-worker-1
+    container_name: spark-worker
     depends_on:
       - spark-master
     ports:
@@ -89,18 +55,6 @@ services:
     networks:
       cscourse:
         ipv4_address: 172.202.0.10
-  spark-worker-2:
-    image: bde2020/spark-worker:3.1.1-hadoop3.2
-    container_name: spark-worker-2
-    depends_on:
-      - spark-master
-    ports:
-      - "8082:8082"
-    environment:
-      - "SPARK_MASTER=spark://spark-master:7077"
-    networks:
-      cscourse:
-        ipv4_address: 172.202.0.11
         
     
   zookeeper:
@@ -144,11 +98,7 @@ networks:
 volumes:
   hadoop_namenode:
     name: namenode
-  hadoop_datanode1:
-    name: datanode1
-  hadoop_datanode2:
-    name: datanode2
-  hadoop_datanode3:
-    name: datanode3
+  hadoop_datanode:
+    name: datanode
   confluent_kafka:
     name: kafka
