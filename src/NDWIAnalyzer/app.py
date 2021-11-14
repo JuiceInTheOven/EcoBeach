@@ -1,10 +1,12 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import explode, split, to_json, array, col
+import argparse
 
 
-def main():
+def main(args):
     spark = setUpSparkSession()
-    dataFrame = loadKafkaTopicStream(spark)
+    dataFrame = loadKafkaTopicStream(args.kafka_servers, spark)
+    print(dataFrame)
     # dataFrame = analyzeNdwiImages(dataFrame)
     # writeKafkaTopic(dataFrame)
     spark.stop()
@@ -20,11 +22,11 @@ def setUpSparkSession():
         .getOrCreate()
 
 
-def loadKafkaTopicStream(spark):
+def loadKafkaTopicStream(spark, kafka_servers):
     return spark \
         .readStream \
         .format("kafka") \
-        .option("kafka.bootstrap.servers", "helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097") \
+        .option("kafka.bootstrap.servers", kafka_servers) \
         .option("subscribe", "ndwi_images") \
         .load()
 
@@ -67,6 +69,15 @@ def writeKafkaTopic(dataFrame):
         .option("topic", "ndwi_results") \
         .start().awaitTermination()
 
+def parseArguments():
+    parser = argparse.ArgumentParser(
+        description='Analyze sentinel 2 NDWI images saved in ndwi_images kafka topic')
+    parser.add_argument('--kafka_servers', type=str, default="kafka:9092",
+                        help='The kafka servers to consume/produce messages from/to (comma separated)')
+    args = parser.parse_args()
+    return args
+
 
 if __name__ == '__main__':
-    main()
+    args = parseArguments()
+    main(args)

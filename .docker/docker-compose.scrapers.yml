@@ -1,10 +1,8 @@
 services:
   scraper-dk:
-    build:
-      context: ./src/SentinelNDWIScraper
-    image: scraper-dk
+    image: nikolaidamm/sentinel-ndwi-scraper:latest
     container_name: scraper-dk
-    command: --countrycode dk --days 100
+    command: --countrycode dk --days 1095
     volumes:
       - scraper_data:/processed/DK
     networks:
