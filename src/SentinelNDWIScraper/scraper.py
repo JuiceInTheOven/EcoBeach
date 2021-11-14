@@ -22,7 +22,7 @@ def scrape(args):
     dfs = pd.read_excel(f"beach_datasets/{args.countrycode}.xlsx", sheet_name=args.countrycode)
 
     # We shuffle the possible indexes, to randomize which location is queried first, to use the 20 LTA retries on different products.
-    for ri in range(10):#randomIndexesInDfs(dfs):
+    for ri in randomIndexesInDfs(dfs):
         countryCode = dfs.iloc[ri][0]
         locationName = dfs.iloc[ri][3].replace(".", "").replace(" ", "")
         lon = dfs.iloc[ri][6]
@@ -80,7 +80,7 @@ def createBlackAndWhiteImg(inFile, outFile):
     plt.imsave(outFile, img, cmap=cmap)
 
 def blackAndWhiteColorMap():
-    cmap = colors.ListedColormap(['black', 'black', 'black', 'white', 'white']) # value 3/5 = 0.68 
+    cmap = colors.ListedColormap(['black', 'black', 'black', 'white', 'white']) # value 3/5 = 0.6
     return cmap
 
 def publishToKafkaTopic(kafka_servers, countryCode, locationName, geoPosition, date, imageName):
@@ -103,7 +103,7 @@ def parseArguments():
     parser = argparse.ArgumentParser(description='Scrape Sentinel Satellite Imagery based on list of positions (lat, lon), and metadata.')
     parser.add_argument('--days', type=int, default=7, help='Days to scrape for')
     parser.add_argument('--countrycode', type=str, default="dk", help='The country to scrape data for')
-    parser.add_argument('--kafka_servers', type=str, default="helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097", help='The kafka servers to produce messages to (comma separated)')
+    parser.add_argument('--kafka_servers', type=str, default="kafka:9092", help='The kafka servers to produce messages to (comma separated)')
     parser.add_argument('--username', type=str, default="nikolai.damm", help="Cupernicus username")
     parser.add_argument('--password', type=str, default="fywfuP-qekfut-xomki3", help="Cupernicus password")
     args = parser.parse_args()
