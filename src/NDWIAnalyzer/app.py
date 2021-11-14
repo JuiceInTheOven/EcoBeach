@@ -5,9 +5,8 @@ import argparse
 
 def main(args):
     spark = setUpSparkSession()
-    dataFrame = loadKafkaTopicStream(args.kafka_servers, spark)
-    print(dataFrame)
-    # dataFrame = analyzeNdwiImages(dataFrame)
+    dataFrame = loadKafkaTopicStream(spark, args.kafka_servers)
+    dataFrame = analyzeNdwiImages(dataFrame)
     # writeKafkaTopic(dataFrame)
     spark.stop()
 
@@ -31,24 +30,11 @@ def loadKafkaTopicStream(spark, kafka_servers):
         .load()
 
 
-# def analyzeNdwiImages(dataFrame):
-#     data = dataFrame.selectExpr(
-#         "CAST(value AS STRING)"
-#     )
-#     print(data)
-#     data = dataFrame.selectExpr(
-#         "CAST(countryCode AS STRING)",
-#         "CAST(locationName AS STRING)",
-#         "CAST(geoPosition AS STRING)",
-#         "CAST(date AS STRING)",
-#         "CAST(imageName AS STRING)",
-#         "CAST(image_bytes AS STRING"
-#     )
-#     print(data)
-#     #resultSchema = createResultSchema()
-#     # resultDataFrame
-#     #mergedColumns = filteredWordCounts.withColumn('value', array(columns))
-#     # return
+def analyzeNdwiImages(dataFrame):
+    dataFrame.writeStream \
+      .format("console")\
+      .start()
+    return dataFrame
 
 
 # def createResultSchema():

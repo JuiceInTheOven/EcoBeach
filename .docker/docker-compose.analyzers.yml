@@ -1,0 +1,13 @@
+services:
+  analyzer:
+    image: nikolaidamm/ndwi-analyzer:latest
+    container_name: analyzer
+    networks:
+      cscourse:
+
+networks:
+  cscourse:
+    name: hadoop
+    ipam:
+      config:
+        - subnet: 172.202.0.0/24
