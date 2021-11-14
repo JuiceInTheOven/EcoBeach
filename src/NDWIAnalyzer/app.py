@@ -44,9 +44,9 @@ def analyzeNdwiImages(dataFrame):
     )
     print(data)
     #resultSchema = createResultSchema()
-    #resultDataFrame
+    # resultDataFrame
     #mergedColumns = filteredWordCounts.withColumn('value', array(columns))
-    #return
+    # return
 
 
 def createResultSchema():
@@ -63,8 +63,8 @@ def createResultSchema():
 def writeKafkaTopic(dataFrame):
     dataFrame.selectExpr("CAST(value AS STRING)").writeStream \
         .format('kafka') \
-        .option("kafka.bootstrap.servers", "kafka:9092") \
-        .option("topic", "sentences") \
+        .option("kafka.bootstrap.servers", "helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097") \
+        .option("topic", "ndwi_results") \
         .start().awaitTermination()
 
 
