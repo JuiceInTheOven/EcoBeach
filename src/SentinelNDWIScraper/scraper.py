@@ -61,7 +61,7 @@ def createSearchArea(lon, lat, size):
 def processGeoTiffImages(args, countryCode, locationName, lon, lat, geoTiffImages):
     for geoTiffImage in geoTiffImages:
         # gets the date part from the geoTiff path
-        date = geoTiffImage.split("-NDWI2")[0].split("tmp/")[1]
+        date = geoTiffImage.split("-NDWI_MacFeeters")[0].split("tmp/")[1]
         imageName = f"{countryCode}-{locationName}-{date}.png"
         imagePath = f"processed/{countryCode}/{imageName}"
         makeCountryCodeProcessingFolder(countryCode)
