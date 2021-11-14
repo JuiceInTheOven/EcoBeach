@@ -31,43 +31,43 @@ def loadKafkaTopicStream(spark, kafka_servers):
         .load()
 
 
-def analyzeNdwiImages(dataFrame):
-    data = dataFrame.selectExpr(
-        "CAST(value AS STRING)"
-    )
-    print(data)
-    data = dataFrame.selectExpr(
-        "CAST(countryCode AS STRING)",
-        "CAST(locationName AS STRING)",
-        "CAST(geoPosition AS STRING)",
-        "CAST(date AS STRING)",
-        "CAST(imageName AS STRING)",
-        "CAST(image_bytes AS STRING"
-    )
-    print(data)
-    #resultSchema = createResultSchema()
-    # resultDataFrame
-    #mergedColumns = filteredWordCounts.withColumn('value', array(columns))
-    # return
+# def analyzeNdwiImages(dataFrame):
+#     data = dataFrame.selectExpr(
+#         "CAST(value AS STRING)"
+#     )
+#     print(data)
+#     data = dataFrame.selectExpr(
+#         "CAST(countryCode AS STRING)",
+#         "CAST(locationName AS STRING)",
+#         "CAST(geoPosition AS STRING)",
+#         "CAST(date AS STRING)",
+#         "CAST(imageName AS STRING)",
+#         "CAST(image_bytes AS STRING"
+#     )
+#     print(data)
+#     #resultSchema = createResultSchema()
+#     # resultDataFrame
+#     #mergedColumns = filteredWordCounts.withColumn('value', array(columns))
+#     # return
 
 
-def createResultSchema():
-    return [col('countryCode'),
-            col('locationName'),
-            col('geoPosition'),
-            col('date'),
-            col('land_squareMeters'),
-            col('land_percentages'),
-            col('water_squareMeters'),
-            col('water_percentages')]
+# def createResultSchema():
+#     return [col('countryCode'),
+#             col('locationName'),
+#             col('geoPosition'),
+#             col('date'),
+#             col('land_squareMeters'),
+#             col('land_percentages'),
+#             col('water_squareMeters'),
+#             col('water_percentages')]
 
 
-def writeKafkaTopic(dataFrame):
-    dataFrame.selectExpr("CAST(value AS STRING)").writeStream \
-        .format('kafka') \
-        .option("kafka.bootstrap.servers", "helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097") \
-        .option("topic", "ndwi_results") \
-        .start().awaitTermination()
+# def writeKafkaTopic(dataFrame):
+#     dataFrame.selectExpr("CAST(value AS STRING)").writeStream \
+#         .format('kafka') \
+#         .option("kafka.bootstrap.servers", "helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097") \
+#         .option("topic", "ndwi_results") \
+#         .start().awaitTermination()
 
 def parseArguments():
     parser = argparse.ArgumentParser(
