@@ -6,7 +6,7 @@ services:
     container_name: scraper-dk
     command: --countrycode dk --days 100
     volumes:
-      - scraper_data:/processed/dk
+      - scraper_data:/processed/DK
     networks:
       cscourse:
 
