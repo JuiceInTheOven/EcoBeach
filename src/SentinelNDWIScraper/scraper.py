@@ -33,7 +33,7 @@ def scrape(args):
 
         today = date.today()
         geoTiffImages = sl.getRegionHistory(countryCode, locationName, createSearchArea(
-            lon, lat, 2), 'NDWI2', '10m', str(today - timedelta(days=args.days)), str(today))
+            lon, lat, 2), 'NDWI_MacFeeters', '10m', str(today - timedelta(days=args.days)), str(today))
         processGeoTiffImages(
             args, countryCode, locationName, lon, lat, geoTiffImages)
         removeDownloadFolder()

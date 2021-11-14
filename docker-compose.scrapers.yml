@@ -1,0 +1,21 @@
+services:
+  scraper-dk:
+    build:
+      context: ./src/SentinelNDWIScraper
+    image: scraper-dk
+    container_name: scraper-dk
+    command: --countrycode dk --days 100
+    volumes:
+      - scraper_data:/processed/dk
+    networks:
+      cscourse:
+
+networks:
+  cscourse:
+    name: hadoop
+    ipam:
+      config:
+        - subnet: 172.202.0.0/24
+
+volumes:
+  scraper_data:
