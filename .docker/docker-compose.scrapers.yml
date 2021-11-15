@@ -7,6 +7,33 @@ services:
       - scraper_data:/processed/DK
     networks:
       cscourse:
+  
+  scraper-se:
+    image: nikolaidamm/sentinel-ndwi-scraper:latest
+    container_name: scraper-se
+    command: --countrycode se --days 1095
+    volumes:
+      - scraper_data:/processed/SE
+    networks:
+      cscourse:
+
+  scraper-de:
+    image: nikolaidamm/sentinel-ndwi-scraper:latest
+    container_name: scraper-de
+    command: --countrycode de --days 1095
+    volumes:
+      - scraper_data:/processed/DE
+    networks:
+      cscourse:
+
+  scraper-uk:
+    image: nikolaidamm/sentinel-ndwi-scraper:latest
+    container_name: scraper-uk
+    command: --countrycode uk --days 1095
+    volumes:
+      - scraper_data:/processed/UK
+    networks:
+      cscourse:
 
 networks:
   cscourse:

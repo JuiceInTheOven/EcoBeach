@@ -1,24 +1,28 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import explode, split, to_json, array, col
+from pyspark.sql.types import *
+from pyspark.sql.functions import from_json, to_json, array, col
 import argparse
 
 
 def main(args):
     spark = setUpSparkSession()
     dataFrame = loadKafkaTopicStream(spark, args.kafka_servers)
+    dataFrame = mapToOriginScheme(dataFrame)
     dataFrame = analyzeNdwiImages(dataFrame)
-    # writeKafkaTopic(dataFrame)
+    # writeKafkaTopic(dataFrame, args.kafka_servers)
     spark.stop()
 
 
 def setUpSparkSession():
-    return SparkSession.builder.appName("ndwi-analyzer") \
+    spark = SparkSession.builder.appName("ndwi-analyzer") \
         .config('spark.master', 'spark://spark-master:7077') \
         .config('spark.executor.cores', 1) \
         .config('spark.cores.max', 1) \
         .config('spark.executor.memory', '1g') \
         .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint/') \
         .getOrCreate()
+    spark.sparkContext.setLogLevel('WARN')
+    return spark
 
 
 def loadKafkaTopicStream(spark, kafka_servers):
@@ -26,34 +30,57 @@ def loadKafkaTopicStream(spark, kafka_servers):
         .readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", kafka_servers) \
+        .option("startingOffsets", "earliest") \
         .option("subscribe", "ndwi_images") \
         .load()
 
 
-def analyzeNdwiImages(dataFrame):
-    dataFrame.writeStream \
-      .format("console")\
-      .start()
+def mapToOriginScheme(dataFrame):
+    schema = createOriginSchema()
+    dataFrame = dataFrame.selectExpr("CAST(value AS STRING)")
+    dataFrame = dataFrame.select(
+        from_json(col("value"), schema).alias("data")).select("data.*")
     return dataFrame
 
 
-# def createResultSchema():
-#     return [col('countryCode'),
-#             col('locationName'),
-#             col('geoPosition'),
-#             col('date'),
-#             col('land_squareMeters'),
-#             col('land_percentages'),
-#             col('water_squareMeters'),
-#             col('water_percentages')]
+def createOriginSchema():
+    return StructType() \
+        .add("countryCode", StringType())\
+        .add("locationName", StringType())\
+        .add("geoPosition", MapType(StringType(), DoubleType()))\
+        .add("date", DateType())\
+        .add("imageName", StringType())\
+        .add("image_bytes", StringType())
 
 
-# def writeKafkaTopic(dataFrame):
-#     dataFrame.selectExpr("CAST(value AS STRING)").writeStream \
-#         .format('kafka') \
-#         .option("kafka.bootstrap.servers", "helsinki.faurskov.dev:9093, falkenstein.faurskov.dev:9095, nuremberg.faurskov.dev:9097") \
-#         .option("topic", "ndwi_results") \
-#         .start().awaitTermination()
+def analyzeNdwiImages(dataFrame):
+    query = dataFrame.writeStream.foreach(processRow).start()
+    return query
+
+
+def processRow(row):
+    print(row)
+
+
+def createResultSchema():
+    return StructType() \
+        .add("countryCode", StringType())\
+        .add("locationName", StringType())\
+        .add("geoPosition", MapType(StringType(), DoubleType()))\
+        .add("date", DateType())\
+        .add("land_squareMeters", DoubleType())\
+        .add("land_percentages", DoubleType())\
+        .add("water_squareMeters", DoubleType())\
+        .add("water_percentages", DoubleType())
+
+
+def writeKafkaTopic(dataFrame, kafka_servers):
+    dataFrame.writeStream\
+        .format('kafka')\
+        .option("kafka.bootstrap.servers", kafka_servers)\
+        .option("topic", "ndwi_results")\
+        .start().awaitTermination()
+
 
 def parseArguments():
     parser = argparse.ArgumentParser(
