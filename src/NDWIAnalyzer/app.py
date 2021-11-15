@@ -14,13 +14,14 @@ def main(args):
 
 
 def setUpSparkSession():
-    spark = SparkSession.builder.appName("ndwi-analyzer") \
-        .config('spark.master', 'spark://spark-master:7077') \
-        .config('spark.executor.cores', 1) \
-        .config('spark.cores.max', 1) \
-        .config('spark.executor.memory', '1g') \
-        .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint/') \
-        .getOrCreate()
+    # spark = SparkSession.builder.appName("ndwi-analyzer") \
+    #     .config('spark.master', 'spark://spark-master:7077') \
+    #     .config('spark.executor.cores', 1) \
+    #     .config('spark.cores.max', 1) \
+    #     .config('spark.executor.memory', '1g') \
+    #     .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint1/') \
+    #     .getOrCreate()
+    spark = SparkSession.builder.master("local[4]").appName("ndwi-analyzer").getOrCreate()
     spark.sparkContext.setLogLevel('WARN')
     return spark
 
@@ -52,14 +53,12 @@ def createOriginSchema():
         .add("imageName", StringType())\
         .add("image_bytes", StringType())
 
+def process_row(row):
+    print("Pretty pls")
+    print(row)
 
 def analyzeNdwiImages(dataFrame):
-    query = dataFrame.writeStream.foreach(processRow).start()
-    return query
-
-
-def processRow(row):
-    print(row)
+    query = dataFrame.writeStream.foreach(process_row).start().awaitTermination(10)
 
 
 def createResultSchema():
