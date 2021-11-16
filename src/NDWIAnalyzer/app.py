@@ -21,6 +21,7 @@ def setUpSparkSession():
     spark = SparkSession.builder \
         .appName("ndwi-analyzer") \
         .master('spark://spark-master:7077')\
+        .config('spark.executor.memory', '3g') \
         .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint/') \
         .getOrCreate()
     spark.sparkContext.setCheckpointDir('hdfs://namenode:9000/udf-checkpoint/')
@@ -33,7 +34,8 @@ def loadKafkaTopicStream(spark, kafka_servers):
         .readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", kafka_servers) \
-        .option("startingOffsets", "earliest") \
+        .option("startingOffsets", "earliest")\
+        .option("endingOffsets", "latest")\
         .option("subscribe", "ndwi_images") \
         .load()
 
