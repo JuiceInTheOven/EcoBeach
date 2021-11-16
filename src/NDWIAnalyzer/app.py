@@ -18,19 +18,12 @@ def main(args):
 
 
 def setUpSparkSession():
-    # spark = SparkSession.builder.appName("ndwi-analyzer") \
-    #     .config('spark.master', 'spark://spark-master:7077') \
-    #     .config('spark.executor.cores', 1) \
-    #     .config('spark.cores.max', 1) \
-    #     .config('spark.executor.memory', '1g') \
-    #     .config('spark.driver.memory', '1g')\
-    #     .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint/') \
-    #     .getOrCreate()
-    spark = SparkSession.builder\
-        .master("local[4]")\
-        .appName("ndwi-analyzer")\
-        .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint10/') \
+    spark = SparkSession.builder \
+        .appName("ndwi-analyzer") \
+        .master('spark://spark-master:7077')\
+        .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint/') \
         .getOrCreate()
+    spark.sparkContext.setCheckpointDir('hdfs://namenode:9000/udf-checkpoint/')
     spark.sparkContext.setLogLevel('WARN')
     return spark
 
@@ -40,6 +33,7 @@ def loadKafkaTopicStream(spark, kafka_servers):
         .readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", kafka_servers) \
+        .option("startingOffsets", "earliest") \
         .option("subscribe", "ndwi_images") \
         .load()
 
