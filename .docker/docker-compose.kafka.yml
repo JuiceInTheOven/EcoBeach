@@ -18,6 +18,8 @@ services:
       KAFKA_PARTITION_ASSIGNMENT_STRATEGY: org.apache.kafka.clients.consumer.RoundRobinAssignor
     volumes:
       - confluent_kafka:/var/lib/kafka/data
+    depends_on:
+      - "zookeeper"
     networks:
       cscourse:
 

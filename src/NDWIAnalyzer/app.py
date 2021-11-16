@@ -22,8 +22,8 @@ def setUpSparkSession():
         .config('spark.master', 'spark://spark-master:7077') \
         .config('spark.executor.cores', 2) \
         .config('spark.cores.max', 2) \
-        .config('spark.executor.memory', '3g') \
-        .config('spark.driver.memory', '3g')\
+        .config('spark.executor.memory', '2g') \
+        .config('spark.driver.memory', '2g')\
         .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint1/') \
         .getOrCreate()
     # spark = SparkSession.builder.master(
