@@ -19,11 +19,11 @@ services:
       - "8081:8081"
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
-    command: >
+    command: > # The NDWIAnalyzer Spark Job requires a few dependencies in the system to allow us to use Pillow (python package) on the Workers.
       bash -c "apk add zlib-dev jpeg-dev gcc musl-dev python3-dev
       && pip3 install Pillow
-      && bash /worker.sh"
-    networks:
+      && bash /worker.sh"  
+    networks: 
       cscourse:
         ipv4_address: 172.202.0.10
 
