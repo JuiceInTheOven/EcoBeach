@@ -12,22 +12,25 @@ def main(args):
     spark = setUpSparkSession()
     dataFrame = loadKafkaTopicStream(spark, args.kafka_servers)
     dataFrame = mapToOriginScheme(dataFrame)
-    dataFrame = processDataFrame(dataFrame)
-    #writeKafkaTopic(dataFrame, args.kafka_servers)
+    dataFrame = processNdwiImages(dataFrame)
+    writeKafkaTopic(dataFrame, args.kafka_servers)
     spark.stop()
 
 
 def setUpSparkSession():
     # spark = SparkSession.builder.appName("ndwi-analyzer") \
     #     .config('spark.master', 'spark://spark-master:7077') \
-    #     .config('spark.executor.cores', 2) \
-    #     .config('spark.cores.max', 2) \
-    #     .config('spark.executor.memory', '2g') \
-    #     .config('spark.driver.memory', '2g')\
-    #     .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint1/') \
+    #     .config('spark.executor.cores', 1) \
+    #     .config('spark.cores.max', 1) \
+    #     .config('spark.executor.memory', '1g') \
+    #     .config('spark.driver.memory', '1g')\
+    #     .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint/') \
     #     .getOrCreate()
-    spark = SparkSession.builder.master(
-        "local[4]").appName("ndwi-analyzer").getOrCreate()
+    spark = SparkSession.builder\
+        .master("local[4]")\
+        .appName("ndwi-analyzer")\
+        .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint/') \
+        .getOrCreate()
     spark.sparkContext.setLogLevel('WARN')
     return spark
 
@@ -60,7 +63,7 @@ def createOriginSchema():
         .add("image_bytes", StringType())
 
 
-def processDataFrame(dataFrame):
+def processNdwiImages(dataFrame):
     dataFrame = dataFrame.withColumn(
         "land_squareMeters", calculateLandSquareMeters(dataFrame.image_bytes))  # cant refactor this method, as the parameters are validated by spark to match dataframe column names.
     dataFrame = dataFrame.withColumn(
@@ -69,10 +72,8 @@ def processDataFrame(dataFrame):
         "water_squareMeters",  calculateWaterSquareMeters(dataFrame.image_bytes))
     dataFrame = dataFrame.withColumn(
         "water_percentage",  calculatePercentage(dataFrame.image_bytes, dataFrame.water_squareMeters))
-    dataFrame = dataFrame.drop(dataFrame.imageName)
-    dataFrame = dataFrame.drop(dataFrame.image_bytes)
-    dataFrame.writeStream.format(
-        "console").outputMode("append").start().awaitTermination(10)
+    dataFrame = dropUneededTables(dataFrame)
+    return dataFrame
 
 
 @udf(returnType=IntegerType())
@@ -107,13 +108,19 @@ def countPixelsFromRgb(image, rgb):
     return counter[rgb]
 
 
+def dropUneededTables(dataFrame):
+    dataFrame = dataFrame.drop(dataFrame.imageName)
+    dataFrame = dataFrame.drop(dataFrame.image_bytes)
+    return dataFrame
+
+
 def writeKafkaTopic(dataFrame, kafka_servers):
     dataFrame.select(
         to_json(struct([dataFrame[x] for x in dataFrame.columns])).alias("value")).select("value").writeStream\
         .format('kafka')\
         .option("kafka.bootstrap.servers", kafka_servers)\
         .option("topic", "ndwi_results")\
-        .start().awaitTermination()
+        .start().awaitTermination(10)
 
 
 def parseArguments():
