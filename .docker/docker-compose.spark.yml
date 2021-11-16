@@ -21,7 +21,8 @@ services:
       - "SPARK_MASTER=spark://spark-master:7077"
     command: >
       bash -c "apk add zlib-dev jpeg-dev gcc musl-dev python3-dev
-      && pip3 install Pillow"
+      && pip3 install Pillow
+      && bash /worker.sh"
     networks:
       cscourse:
         ipv4_address: 172.202.0.10
