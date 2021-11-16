@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
-from pyspark.sql.functions import from_json, struct, to_json, lit, col, udf
+from pyspark.sql.functions import from_json, struct, to_json, col, udf
 import argparse
 import base64
 import io
@@ -66,14 +66,13 @@ def processNdwiImages(dataFrame):
         "water_squareMeters",  calculateWaterSquareMeters(dataFrame.image_bytes))
     dataFrame = dataFrame.withColumn(
         "water_percentage",  calculatePercentage(dataFrame.image_bytes, dataFrame.water_squareMeters))
-    dataFrame = dropUneededTables(dataFrame)
+    dataFrame = dropUnneededTables(dataFrame)
     return dataFrame
 
 
 @udf(returnType=IntegerType())
 def calculateLandSquareMeters(imageBytes):
-    image = createImage(imageBytes)
-    return countPixelsFromRgb(image, (0, 0, 0, 255)) * 10
+    return countPixelsFromRgb(createImage(imageBytes), (0, 0, 0, 255)) * 10
 
 
 @udf(returnType=DoubleType())
@@ -85,15 +84,13 @@ def calculatePercentage(imageBytes, squareMeters):
 
 @udf(returnType=IntegerType())
 def calculateWaterSquareMeters(imageBytes):
-    image = createImage(imageBytes)
-    return countPixelsFromRgb(image, (255, 255, 255, 255)) * 10
+    return countPixelsFromRgb(createImage(imageBytes), (255, 255, 255, 255)) * 10
 
 
 def createImage(imageBytes):
     base64_imageBytes = imageBytes.encode()
     imageBytes = base64.b64decode(base64_imageBytes)
-    dataBytesIO = io.BytesIO(imageBytes)
-    return Image.open(dataBytesIO)
+    return Image.open(io.BytesIO(imageBytes))
 
 
 def countPixelsFromRgb(image, rgb):
@@ -102,7 +99,7 @@ def countPixelsFromRgb(image, rgb):
     return counter[rgb]
 
 
-def dropUneededTables(dataFrame):
+def dropUnneededTables(dataFrame):
     dataFrame = dataFrame.drop(dataFrame.imageName)
     dataFrame = dataFrame.drop(dataFrame.image_bytes)
     return dataFrame
