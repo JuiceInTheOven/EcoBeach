@@ -29,7 +29,7 @@ def setUpSparkSession():
     spark = SparkSession.builder\
         .master("local[4]")\
         .appName("ndwi-analyzer")\
-        .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint/') \
+        .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint10/') \
         .getOrCreate()
     spark.sparkContext.setLogLevel('WARN')
     return spark
@@ -40,7 +40,6 @@ def loadKafkaTopicStream(spark, kafka_servers):
         .readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", kafka_servers) \
-        .option("startingOffsets", "earliest") \
         .option("subscribe", "ndwi_images") \
         .load()
 
@@ -115,9 +114,10 @@ def dropUneededTables(dataFrame):
 
 
 def writeKafkaTopic(dataFrame, kafka_servers):
-    dataFrame.select(
-        to_json(struct([dataFrame[x] for x in dataFrame.columns])).alias("value")).select("value").writeStream\
+    dataFrame.select(to_json(struct([dataFrame[x] for x in dataFrame.columns])).alias("value")).select("value")\
+        .writeStream\
         .format('kafka')\
+        .outputMode("append")\
         .option("kafka.bootstrap.servers", kafka_servers)\
         .option("topic", "ndwi_results")\
         .start().awaitTermination(10)
