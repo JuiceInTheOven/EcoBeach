@@ -18,16 +18,16 @@ def main(args):
 
 
 def setUpSparkSession():
-    spark = SparkSession.builder.appName("ndwi-analyzer") \
-        .config('spark.master', 'spark://spark-master:7077') \
-        .config('spark.executor.cores', 2) \
-        .config('spark.cores.max', 2) \
-        .config('spark.executor.memory', '2g') \
-        .config('spark.driver.memory', '2g')\
-        .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint1/') \
-        .getOrCreate()
-    # spark = SparkSession.builder.master(
-    #     "local[4]").appName("ndwi-analyzer").getOrCreate()
+    # spark = SparkSession.builder.appName("ndwi-analyzer") \
+    #     .config('spark.master', 'spark://spark-master:7077') \
+    #     .config('spark.executor.cores', 2) \
+    #     .config('spark.cores.max', 2) \
+    #     .config('spark.executor.memory', '2g') \
+    #     .config('spark.driver.memory', '2g')\
+    #     .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint1/') \
+    #     .getOrCreate()
+    spark = SparkSession.builder.master(
+        "local[4]").appName("ndwi-analyzer").getOrCreate()
     spark.sparkContext.setLogLevel('WARN')
     return spark
 
@@ -63,23 +63,23 @@ def createOriginSchema():
 def processDataFrame(dataFrame):
     dataFrame = dataFrame.withColumn(
         "land_squareMeters", calculateLandSquareMeters(dataFrame.image_bytes))  # cant refactor this method, as the parameters are validated by spark to match dataframe column names.
-    # dataFrame = dataFrame.withColumn(
-    #     "land_percentage",  calculatePercentage(dataFrame.image_bytes, dataFrame.land_squareMeters))
-    # dataFrame = dataFrame.withColumn(
-    #      "water_squareMeters",  calculateWaterSquareMeters(dataFrame.image_bytes))
-    # dataFrame = dataFrame.withColumn(
-    #     "water_percentage",  calculatePercentage(dataFrame.image_bytes, dataFrame.water_squareMeters))
+    dataFrame = dataFrame.withColumn(
+        "land_percentage",  calculatePercentage(dataFrame.image_bytes, dataFrame.land_squareMeters))
+    dataFrame = dataFrame.withColumn(
+        "water_squareMeters",  calculateWaterSquareMeters(dataFrame.image_bytes))
+    dataFrame = dataFrame.withColumn(
+        "water_percentage",  calculatePercentage(dataFrame.image_bytes, dataFrame.water_squareMeters))
     dataFrame = dataFrame.drop(dataFrame.imageName)
     dataFrame = dataFrame.drop(dataFrame.image_bytes)
     dataFrame.writeStream.format(
         "console").outputMode("append").start().awaitTermination(10)
 
+
 @udf(returnType=IntegerType())
 def calculateLandSquareMeters(imageBytes):
     image = createImage(imageBytes)
-    pixels = image.getdata()
-    counter = Counter(pixels)
-    return 10 * 10
+    return countPixelsFromRgb(image, (0, 0, 0, 255)) * 10
+
 
 @udf(returnType=DoubleType())
 def calculatePercentage(imageBytes, squareMeters):
@@ -87,12 +87,12 @@ def calculatePercentage(imageBytes, squareMeters):
     width, height = image.size
     return squareMeters/((width * height) * 10)
 
+
 @udf(returnType=IntegerType())
 def calculateWaterSquareMeters(imageBytes):
     image = createImage(imageBytes)
-    pixels = image.getdata()
-    #counter = Counter(pixels)
-    return 10 * 10
+    return countPixelsFromRgb(image, (255, 255, 255, 255)) * 10
+
 
 def createImage(imageBytes):
     base64_imageBytes = imageBytes.encode()
@@ -100,10 +100,12 @@ def createImage(imageBytes):
     dataBytesIO = io.BytesIO(imageBytes)
     return Image.open(dataBytesIO)
 
+
 def countPixelsFromRgb(image, rgb):
     pixels = image.getdata()
     counter = Counter(pixels)
     return counter[rgb]
+
 
 def writeKafkaTopic(dataFrame, kafka_servers):
     dataFrame.select(
