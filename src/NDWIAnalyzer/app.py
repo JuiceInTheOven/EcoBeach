@@ -35,7 +35,6 @@ def loadKafkaTopicStream(spark, kafka_servers):
         .format("kafka") \
         .option("kafka.bootstrap.servers", kafka_servers) \
         .option("startingOffsets", "earliest")\
-        .option("endingOffsets", "latest")\
         .option("subscribe", "ndwi_images") \
         .load()
 
