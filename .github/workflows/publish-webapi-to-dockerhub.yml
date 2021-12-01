@@ -31,6 +31,6 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v2
         with:
-          context: ./src/WebApi/
+          context: ./src/WebApi/,./src/WebApi.Logic,./src/WebApi.DataAccess
           push: true
           tags: nikolaidamm/webapi:latest
