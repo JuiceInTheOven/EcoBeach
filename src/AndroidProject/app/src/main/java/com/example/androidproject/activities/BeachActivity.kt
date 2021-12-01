@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.TextView
 import com.example.androidproject.R
 import com.example.androidproject.models.Beach
+import kotlin.math.roundToLong
 
 class BeachActivity : AppCompatActivity() {
     private lateinit var beach: Beach
@@ -22,8 +23,11 @@ class BeachActivity : AppCompatActivity() {
         )
 
         this.findViewById<TextView>(R.id.beach_title).text = beach.Name
-        this.findViewById<TextView>(R.id.beach_lat).text = "Lat: " + beach.Lat.toString()
-        this.findViewById<TextView>(R.id.beach_lng).text = "Lng: " + beach.Lng.toString()
+        val latRounded = "%.2f".format(beach.Lat).toDouble()
+        val lngRounded = "%.2f".format(beach.Lng).toDouble()
+
+        this.findViewById<TextView>(R.id.beach_lat).text = "Lat: " + latRounded.toString()
+        this.findViewById<TextView>(R.id.beach_lng).text = "Lng: " + lngRounded.toString()
 
         val closeButton = this.findViewById<Button>(R.id.close_beach_btn).setOnClickListener(){
             this.finish()

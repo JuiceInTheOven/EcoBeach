@@ -10,9 +10,10 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 
 class CustomMarker (context: Context) : GoogleMap.InfoWindowAdapter {
-    override fun getInfoWindow(marker: Marker?): View {
-        setWindowTexts(marker, mWindow)
-        return mWindow
+    override fun getInfoWindow(marker: Marker?): View? {
+        //setWindowTexts(marker, mWindow)
+        //return mWindow
+        return null
     }
 
     override fun getInfoContents(marker: Marker?): View {

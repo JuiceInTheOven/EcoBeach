@@ -5,6 +5,8 @@
       <map>
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.25462962962962965" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable/beach_24.xml" value="0.25462962962962965" />
+        <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable/change_icon.xml" value="0.2703125" />
+        <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable/close_icon.xml" value="0.2703125" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable/ic_baseline_beach_access_24.xml" value="0.14635416666666667" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable/ic_beach.xml" value="0.176" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable/ic_beach_green.xml" value="0.14635416666666667" />
@@ -12,9 +14,11 @@
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable/ic_launcher_background.xml" value="0.25462962962962965" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable/ic_location_green.xml" value="0.14635416666666667" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable/ic_map_marker_solid.xml" value="0.15416666666666667" />
+        <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/drawable/rounded_btn.xml" value="0.2703125" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/layout/activity_beach.xml" value="0.264" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/layout/activity_splash_screen.xml" value="0.264" />
+        <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/layout/bg_map_info.xml" value="0.22327898550724637" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/layout/infowindowlayout.xml" value="0.4" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.25462962962962965" />
         <entry key="..\:/SDU/1st semester/Semester Project in Scalable Systems (E21)/Semester project/src/AndroidProject/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.14635416666666667" />
