@@ -1,0 +1,8 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "C:\\Users\\Guli\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\Guli\\.nuget\\packages"
+    ]
+  }
+}
