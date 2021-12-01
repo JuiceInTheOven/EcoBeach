@@ -3,11 +3,11 @@ name: Build and test webapi
 on:
   push:
     paths:
-      - "src/WebApi/**"
+      - "src/Api/WebApi/**"
       - ".github/workflows/build-and-test-webapi.yml"
   pull_request:
     paths:
-      - "src/WebApi/**"
+      - "src/Api/WebApi/**"
       - ".github/workflows/build-and-test-webapi.yml"
 env:
   DOTNET_VERSION: '6.0.x'
@@ -27,7 +27,7 @@ jobs:
           include-prerelease: true
 
       - name: Build
-        run: dotnet build ./src/WebApi/WebApi.csproj --configuration Release
+        run: dotnet build ./src/Api/WebApi/WebApi.csproj --configuration Release
         
       - name: Publish codecoverage to CodeCov
         uses: codecov/codecov-action@v2.1.0
