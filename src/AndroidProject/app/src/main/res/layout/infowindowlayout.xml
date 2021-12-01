@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="#FFFFFF">
 
-<!--    <ImageView-->
-<!--        android:id="@+id/info_image"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:src="@drawable/ic_beach"-->
-<!--        android:background="#00FA9A"/>-->
 
     <TextView
         android:id="@+id/info_title"
@@ -21,18 +15,30 @@
         android:textSize="18dp"
         android:textStyle="bold" />
 
+    <ImageView
+        android:id="@+id/info_image"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_location_green"
+        android:layout_below="@id/info_title"
+/>
+
     <TextView
         android:id="@+id/info_lat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/montserrat"
-        android:text="Lat" />
+        android:text="Lat"
+        android:layout_below="@id/info_title"
+        android:layout_toRightOf="@id/info_image" />
 
     <TextView
         android:id="@+id/info_lng"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/montserrat"
-        android:text="Lng" />
+        android:text="Lng"
+        android:layout_below="@id/info_lat"
+        android:layout_toRightOf="@id/info_image"/>
 
-</LinearLayout>
+</RelativeLayout>
