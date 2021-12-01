@@ -28,7 +28,7 @@ jobs:
 
       - name: Build
         run: dotnet build ./src/WebApi/WebApi.csproj --configuration Release
-
+        
       - name: Publish codecoverage to CodeCov
         uses: codecov/codecov-action@v2.1.0
         with:
