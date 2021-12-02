@@ -1,23 +1,64 @@
 \chapter{The Solution}
 
-- Introduce sections
+In this chapter EcoBeach, a solution to the problem presented in \autoref{ch:the-problem}, will be described. EcoBeach is a highly resilient distributed system, that is able to process satellite imagery in real-time and analyze the difference in water-levels on given geo locations.
+EcoBeach collects data from beach locations in Denmark, Sweden, Germany, and the United Kingdom. Limiting the locations to beaches is a deliberate choice, as the solution is currently limited by the available resources on the servers it is hosted on.\medbreak
+\noindent
+In \autoref{sec:solution-approach} \nameref{sec:solution-approach} EcoBeach will be described at a high-level. First a summary of solutions to the sub-problems in \autoref{sec:problem-description} is given, and next the infrastructure of EcoBeach is presented to show how the solutions to each of the sub-problems complement each other to provide a feasible solution to monitoring shorelines.
 
-\section{Solution Approach}
-Describe the solution approach on a high-level including advantages and drawbacks based on relevant literature 
+Lastly, the advantages and drawbacks of EcoBeach will be presented, along with future work that can potentially alleviate some of drawbacks.
 
-- How do we want to solve the problems described in chapter 1?
-    - Present the sub-sections which will go into detail with the topics related to answering the sub-problems
-    - Something like: "To download satellite images from Cupernicus we want to create a resilient service that can be run periodically to scrape for satellite images on given geo locations. The solution approach for this sub-problem is described at a high-level in section x.x.x"
+\section{Solution Approach}\label{sec:solution-approach}
+
+EcoBeach consists of collection of services that each play a crucial role in monitoring shorelines. There is a total of 8\todo{just correct this if i am wrong} services: \todo{add table label and reference it}
+
+\begin{table}[]
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Service name}   & \textbf{Service description} \\ \hline
+        Sentinel NDWI Scraper   &                              \\\hline
+        Kafka                   &                              \\\hline
+        Hadoop                  &                              \\\hline
+        Zookeeper               &                              \\\hline
+        MongoDB                 &                              \\\hline
+        MongoDB Kafka Connector &                              \\\hline
+        WebAPI                  &                              \\\hline
+        Android Application     &                              \\\hline
+    \end{tabular}
+\end{table}
+
+All of these services were chosen or created to solve the sub-problems that had to be solved to create EcoBeach. Below a summary of each solution to the sub-problems is presented.
+
+\paragraph{How to download satellite images from Cupernicus?} To download satellite images from Cupernicus we created a resilient scraping service that can be run periodically to download and pre-process satellite images on given geo locations. The solution approach for this sub-problem is described at a high-level in \autoref{subsec:scraping-and-periodic-tasks}.
+\paragraph{How to process images so water is differentiated from land?}
+\paragraph{How to build a system capable of handling huge amounts of data?}
+\paragraph{How to build a system capable of real-time processing?}
+\paragraph{How to build a highly resilient system?}
+\paragraph{How to build a mobile application that uses mobile sensing in a meaningful way to visualize shoreline changes?}
+
 - Present the infrastructure diagram
+
 - Explain the infrastructure diagram
+
 - Advantages of the solution
+
 - Drawbacks of the solution
 
-\subsection{Scraping and periodic tasks}
+- Future work
+
+
+
+
+
+
+
+
+
+
+\subsection{Scraping and periodic tasks} \label{subsec:scraping-and-periodic-tasks}
 
 - What does it mean to scrape?
 - How is it possible to periodically run a task?
-    - Use crontab as an example at this point. We are
+- Use crontab as an example at this point. We are
 
 \subsection{Containerization and container orchestration}
 
@@ -47,7 +88,7 @@ Describe the solution approach on a high-level including advantages and drawback
 
 \subsection{Mobile Sensing in Mobile Apps}
 
-\section{Solution Description and Results} 
+\section{Solution Description and Results}
 Describe the solution and test and evaluation results (note: remember to refer to what the video covers)
 
 \section{Deployment and hosting strategy}
