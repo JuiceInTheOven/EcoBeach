@@ -2,7 +2,8 @@ services:
   analyzer:
     image: nikolaidamm/ndwi-analyzer:latest
     container_name: analyzer
-    command: --kafka_servers kafka:9092
+    environment:
+      - SPARK_APPLICATION_ARGS=--kafka_servers kafka:9092
     networks:
       cscourse:
 
