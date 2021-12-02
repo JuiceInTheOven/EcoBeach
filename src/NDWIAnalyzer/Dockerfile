@@ -1,7 +1,6 @@
 FROM bde2020/spark-submit:3.1.1-hadoop3.2
 
 COPY template.sh /
-COPY submit.sh /
 
 RUN apk add zlib-dev jpeg-dev gcc musl-dev python3-dev
 
