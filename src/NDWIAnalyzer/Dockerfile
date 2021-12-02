@@ -14,4 +14,4 @@ COPY . /app
 ENV ENABLE_INIT_DAEMON false
 ENV SPARK_SUBMIT_ARGS "--packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2"
 
-ENTRYPOINT ["/bin/bash", "/template.sh"]
+CMD ["/bin/bash", "/template.sh"]

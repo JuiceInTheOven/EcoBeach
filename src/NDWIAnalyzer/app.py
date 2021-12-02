@@ -118,7 +118,7 @@ def writeKafkaTopic(dataFrame, kafka_servers):
 def parseArguments():
     parser = argparse.ArgumentParser(
         description='Analyze sentinel 2 NDWI images saved in ndwi_images kafka topic')
-    parser.add_argument('--kafka_servers', type=str, default="kafka:9092",
+    parser.add_argument('--kafka_servers', type=str, default="kafka-helsinki:9093,kafka-falkenstein:9095,kafka-nuremberg:9097",
                         help='The kafka servers to consume/produce messages from/to (comma separated)')
     args = parser.parse_args()
     return args
