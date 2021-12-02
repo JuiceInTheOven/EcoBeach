@@ -10,14 +10,13 @@ RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /
 USER appuser
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0-focal AS build
-WORKDIR /src
-COPY ["WebApi.csproj", ""]
+COPY ["WebApi/WebApi.csproj", ""]
 RUN dotnet restore "WebApi.csproj"
 COPY . .
-RUN dotnet build "WebApi.csproj" -c Release -o /app/build
+RUN dotnet build "WebApi/WebApi.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "WebApi.csproj" -c Release -o /app/publish
+RUN dotnet publish "WebApi/WebApi.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
