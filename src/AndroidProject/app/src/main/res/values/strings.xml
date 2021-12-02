@@ -1,14 +1,8 @@
 <resources>
     <string name="app_name">EcoBeach</string>
-
-    <string-array name="distances">
-        <item>5 km</item>
-        <item>10 km</item>
-        <item>20 km</item>
-        <item>40 km</item>
-        <item>80 km</item>
-        <item>100 km</item>
-        <item>150 km</item>
-        <item>200 km</item>
-    </string-array>
+    <string name="location_text">Location</string>
+    <string name="lat_text">Lat: %1$s</string>
+    <string name="lng_text">Lng: %1$s</string>
+    <string name="beach_name_text">Beach name</string>
+    <string name="changes_text">Changes</string>
 </resources>

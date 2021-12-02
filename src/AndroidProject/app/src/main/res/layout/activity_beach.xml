@@ -13,7 +13,7 @@
         android:layout_marginStart="5dp"
         android:layout_marginTop="10dp"
         android:fontFamily="@font/montserrat_bold"
-        android:text="Beach name"
+        android:text="@string/beach_name_text"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,7 +26,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/montserrat"
-        android:text="TextView"
+        android:text="@string/lat_text"
         app:layout_constraintStart_toEndOf="@+id/imageView2"
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
@@ -37,7 +37,7 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/montserrat"
-        android:text="TextView"
+        android:text="@string/lng_text"
         app:layout_constraintStart_toEndOf="@+id/beach_lat"
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
@@ -53,6 +53,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
+        android:contentDescription="@string/location_text"
         android:id="@+id/imageView2"
         android:layout_width="60dp"
         android:layout_height="60dp"
@@ -69,7 +70,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="50dp"
         android:fontFamily="@font/montserrat_bold"
-        android:text="Location"
+        android:text="@string/location_text"
         android:textSize="16sp"
         app:layout_constraintStart_toEndOf="@+id/imageView2"
         app:layout_constraintTop_toBottomOf="@+id/beach_title" />
@@ -85,6 +86,7 @@
         app:layout_constraintVertical_bias="0.344" />
 
     <ImageView
+        android:contentDescription="@string/changes_text"
         android:id="@+id/imageView3"
         android:layout_width="60dp"
         android:layout_height="60dp"
@@ -101,7 +103,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="30dp"
         android:fontFamily="@font/montserrat_bold"
-        android:text="Changes"
+        android:text="@string/changes_text"
         android:textSize="16sp"
         app:layout_constraintStart_toEndOf="@+id/imageView3"
         app:layout_constraintTop_toBottomOf="@+id/imageView2" />

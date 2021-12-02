@@ -5,40 +5,41 @@
     android:orientation="vertical"
     android:background="#FFFFFF">
 
-
     <TextView
         android:id="@+id/info_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/montserrat_bold"
-        android:text="Beach name"
-        android:textSize="18dp"
+        android:text="@string/beach_name_text"
+        android:textSize="18sp"
         android:textStyle="bold" />
 
     <ImageView
         android:id="@+id/info_image"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/ic_location_green"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:layout_below="@id/info_title"
-/>
+        android:contentDescription="@string/location_text"
+        android:src="@drawable/ic_location_green" />
 
     <TextView
         android:id="@+id/info_lat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/montserrat"
-        android:text="Lat"
+        android:text="@string/lat_text"
         android:layout_below="@id/info_title"
-        android:layout_toRightOf="@id/info_image" />
+        android:layout_toEndOf="@id/info_image"
+        android:layout_marginEnd="15dp"/>
 
     <TextView
         android:id="@+id/info_lng"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/info_title"
+        android:layout_toEndOf="@id/info_lat"
         android:fontFamily="@font/montserrat"
-        android:text="Lng"
-        android:layout_below="@id/info_lat"
-        android:layout_toRightOf="@id/info_image"/>
+        android:text="@string/lng_text"
+        android:gravity="end" />
 
 </RelativeLayout>
