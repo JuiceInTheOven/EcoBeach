@@ -64,19 +64,24 @@ def processGeoTiffImages(args, countryCode, locationName, lon, lat, geoTiffImage
         date = geoTiffImage.split("-NDWI_MacFeeters")[0].split("tmp/")[1]
         imageName = f"{countryCode}-{locationName}-{date}.png"
         imagePath = f"processed/{imageName}"
-        os.makedirs(f"processed")
+        createProcessingFolder()
         processImage(args, countryCode, locationName, lon, lat,
                      geoTiffImage, date, imageName, imagePath)
         removeProcessedImage(geoTiffImage)
+
+def createProcessingFolder():
+    if(not processingFolderExists()):
+        os.makedirs("processed")
         
+def processingFolderExists():
+    return os.path.exists("processed")
+
 def processImage(args, countryCode, locationName, lon, lat, geoTiff, geoTiffDate, imageName, imagePath):
     # We only want create and publish new images.
     if(not processedImageExists(imagePath)):
         createBlackAndWhiteImg(geoTiff, imagePath)
         publishToKafkaTopic(args.kafka_servers, countryCode, locationName, [
                             lon, lat], geoTiffDate, imageName)
-
-
 def processedImageExists(imagePath):
     return os.path.isfile(imagePath)
 
