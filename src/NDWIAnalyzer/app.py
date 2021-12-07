@@ -21,7 +21,7 @@ def setUpSparkSession():
     spark = SparkSession.builder \
         .appName("ndwi-analyzer") \
         .master('spark://spark-master:7077')\
-        .config('spark.executor.memory', '3g') \
+        .config('spark.executor.memory', '2g') \
         .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/stream-checkpoint/') \
         .getOrCreate()
     spark.sparkContext.setCheckpointDir('hdfs://namenode:9000/udf-checkpoint/')
