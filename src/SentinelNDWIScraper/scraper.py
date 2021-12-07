@@ -63,22 +63,12 @@ def processGeoTiffImages(args, countryCode, locationName, lon, lat, geoTiffImage
         # gets the date part from the geoTiff path
         date = geoTiffImage.split("-NDWI_MacFeeters")[0].split("tmp/")[1]
         imageName = f"{countryCode}-{locationName}-{date}.png"
-        imagePath = f"processed/{countryCode}/{imageName}"
-        makeCountryCodeProcessingFolder(countryCode)
+        imagePath = f"processed/{imageName}"
+        os.makedirs(f"processed")
         processImage(args, countryCode, locationName, lon, lat,
                      geoTiffImage, date, imageName, imagePath)
         removeProcessedImage(geoTiffImage)
-
-
-def makeCountryCodeProcessingFolder(countryCode):
-    if(not countryCodeProcessingFolderExists(countryCode)):
-        os.makedirs(f"processed/{countryCode}")
-
-
-def countryCodeProcessingFolderExists(countryCode):
-    return os.path.exists(f"processed/{countryCode}")
-
-
+        
 def processImage(args, countryCode, locationName, lon, lat, geoTiff, geoTiffDate, imageName, imagePath):
     # We only want create and publish new images.
     if(not processedImageExists(imagePath)):
@@ -105,7 +95,7 @@ def blackAndWhiteColorMap():
 
 
 def publishToKafkaTopic(kafka_servers, countryCode, locationName, geoPosition, date, imageName):
-    image_bytes = open(f"processed/{countryCode}/{imageName}", "rb").read()
+    image_bytes = open(f"processed/{imageName}", "rb").read()
     image_bytes_base64 = base64.b64encode(image_bytes)
     producer = KafkaProducer(bootstrap_servers=kafka_servers,
                              value_serializer=lambda v: json.dumps(v).encode('utf-8'), acks='all')
