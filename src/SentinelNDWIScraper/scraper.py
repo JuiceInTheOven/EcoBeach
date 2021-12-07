@@ -108,7 +108,7 @@ def publishToKafkaTopic(kafka_servers, countryCode, locationName, geoPosition, d
     image_bytes = open(f"processed/{countryCode}/{imageName}", "rb").read()
     image_bytes_base64 = base64.b64encode(image_bytes)
     producer = KafkaProducer(bootstrap_servers=kafka_servers,
-                             value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+                             value_serializer=lambda v: json.dumps(v).encode('utf-8'), acks='all')
     producer.send('ndwi_images', {"countryCode": countryCode, "locationName": locationName, "geoPosition": {
                   "lon": geoPosition[0], "lat": geoPosition[1]}, "date": date, "image_bytes": image_bytes_base64.decode()})
 
