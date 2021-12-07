@@ -22,9 +22,9 @@ def setUpSparkSession():
         .appName("ndwi-analyzer") \
         .master('spark://spark-master:7077')\
         .config('spark.executor.memory', '2g') \
-        .config('spark.sql.streaming.checkpointLocation', 'webhdfs://namenode:9000') \
+        .config('spark.sql.streaming.checkpointLocation', 'webhdfs://namenode:9000/stream-checkpoint') \
         .getOrCreate()
-    spark.sparkContext.setCheckpointDir('webhdfs://namenode:9000')
+    spark.sparkContext.setCheckpointDir('webhdfs://namenode:9000/udf-checkpoint')
     spark.sparkContext.setLogLevel('WARN')
     return spark
 
