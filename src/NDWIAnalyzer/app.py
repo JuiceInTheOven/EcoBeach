@@ -21,7 +21,7 @@ def setUpSparkSession():
     spark = SparkSession.builder \
         .appName("ndwi-analyzer") \
         .master('spark://spark-master:7077')\
-        .config('spark.executor.memory', '1g') \
+        .config('spark.executor.memory', '256mb') \
         .config("spark.hadoop.dfs.client.use.datanode.hostname", "true") \
         .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/checkpoints/stream/') \
         .getOrCreate()
@@ -114,7 +114,8 @@ def writeKafkaTopic(dataFrame, kafka_servers):
         .option("kafka.bootstrap.servers", kafka_servers)\
         .option("topic", "ndwi_results")\
         .start()\
-        .awaitTermination()
+        .awaitTermination()\
+        .stop()
 
 
 def parseArguments():
