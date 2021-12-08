@@ -23,6 +23,7 @@ def setUpSparkSession():
         .master('spark://spark-master:7077')\
         .config('spark.executor.memory', '1g') \
         .config("spark.hadoop.dfs.client.use.datanode.hostname", "true") \
+        .config("spark.hadoop.dfs.replication", 3) \
         .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/checkpoints/stream/') \
         .getOrCreate()
     spark.sparkContext.setCheckpointDir('hdfs://namenode:9000/checkpoints/udf/')
