@@ -113,7 +113,8 @@ def writeKafkaTopic(dataFrame, kafka_servers):
         .outputMode("append")\
         .option("kafka.bootstrap.servers", kafka_servers)\
         .option("topic", "ndwi_results")\
-        .start().awaitTermination(3600)
+        .start()\
+        .awaitTermination()
 
 
 def parseArguments():
