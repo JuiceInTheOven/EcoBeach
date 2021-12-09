@@ -21,7 +21,7 @@ def setUpSparkSession():
     spark = SparkSession.builder \
         .appName("ndwi-analyzer") \
         .master('spark://spark-master:7077')\
-        .config('spark.executor.memory', '512mb') \
+        .config('spark.executor.memory', '480mb') \
         .config("spark.hadoop.dfs.client.use.datanode.hostname", "true") \
         .config('spark.sql.streaming.checkpointLocation', 'hdfs://namenode:9000/checkpoints/stream/') \
         .getOrCreate()
