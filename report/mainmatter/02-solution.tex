@@ -1,17 +1,18 @@
 \chapter{The Solution}
 
-In this chapter EcoBeach, a solution to the problem presented in \autoref{ch:the-problem}, will be described. EcoBeach is a highly resilient distributed system, that is able to process satellite imagery in real-time and analyze the difference in water-levels on given geo locations.
-EcoBeach collects data from beach locations in Denmark, Sweden, Germany, and the United Kingdom. Limiting the locations to beaches in select countries is a deliberate choice, as the solution is currently limited by the available resources on the servers it is hosted on.\medbreak
+In this chapter EcoBeach, a solution to the problem presented in \autoref{ch:the-problem}, will be described. EcoBeach is a highly resilient distributed system that can process satellite imagery in real-time and analyze the difference in water levels on given geo-locations.
+EcoBeach collects data from beach locations in Denmark, Sweden, Germany, and the United Kingdom. Limiting geo locations to beaches in select countries is a deliberate choice, as the available server resources currently restrict the solution's scalability.\medbreak
 \noindent
-In \autoref{sec:solution-approach} \nameref{sec:solution-approach} EcoBeach will be described at a high-level. First a summary of solutions to the sub-problems in \autoref{sec:problem-description} is given, and next the infrastructure of EcoBeach is presented to show how the solutions to each of the sub-problems complement each other to provide a feasible solution to monitoring shorelines.
+In \autoref{sec:solution-approach} \nameref{sec:solution-approach} EcoBeach will be described at a high-level. First, a summary of solutions to the sub-problems in \autoref{sec:problem-description} is given. Next, the infrastructure of EcoBeach is presented to show how the solutions to each of the sub-problems complement each other to provide a feasible solution to monitoring shorelines.
 
-Lastly, the advantages and drawbacks of EcoBeach will be presented, along with future work that can potentially alleviate some of drawbacks.
+Lastly, the advantages and disadvantages of EcoBeach will be presented, along with future work that can potentially alleviate some of the disadvantages.
 
 \section{Solution Approach}\label{sec:solution-approach}
 
-EcoBeach consists of collection of services that each play a crucial role in monitoring shorelines. There is a total of 8\todo{just correct this if i am wrong} services: \todo{add table label and reference it}
+EcoBeach consists of services that each play a crucial role in monitoring shorelines. There is a total of 8\todo{just correct this if I am wrong} services as shown in \autoref{tab:ecobeach-services}.
 
 \begin{table}[]
+    \centering
     \begin{tabular}{|l|l|}
         \hline
         \textbf{Service name}   & \textbf{Service description} \\ \hline
@@ -24,9 +25,12 @@ EcoBeach consists of collection of services that each play a crucial role in mon
         WebAPI                  &                              \\\hline
         Android Application     &                              \\\hline
     \end{tabular}
+    \caption{The services that make up EcoBeach}
+    \label{tab:ecobeach-services}
 \end{table}
 
-All of these services were chosen or created to solve the sub-problems that had to be solved to create EcoBeach. Below a summary of each solution to the sub-problems is presented.
+\noindent
+The services in EcoBeach were chosen or created to provide solutions to the sub-problems. Below a summary of each solution to the sub-problems is presented.
 
 \paragraph{How to download satellite images from Cupernicus?} To download satellite images from Cupernicus we created a resilient scraping service that can be run periodically to download and pre-process satellite images on given geo locations. The solution approach for this sub-problem is described at a high-level in \autoref{subsec:scraping-and-periodic-tasks}.
 \paragraph{How to process images so water is differentiated from land?}
@@ -35,71 +39,60 @@ All of these services were chosen or created to solve the sub-problems that had 
 \paragraph{How to build a highly resilient system?}
 \paragraph{How to build a mobile application that uses mobile sensing in a meaningful way to visualize shoreline changes?}
 
+\subsection{The infrastruture}
 - Present the infrastructure diagram
-
 - Explain the infrastructure diagram
+- dont go in depth here, thats what we have the Hosting Setup for.
 
+\subsection{Advantages and disadvantages of EcoBeach}
 - Advantages of the solution
+- Disadvantages of the solution
 
-- Drawbacks of the solution
-
+\subsection{Future work}
 - Future work
 
+\section{Solution Description}
+
+In this section, an in-depth description of the solution is presented.  First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, or process data in EcoBeach are presented.
+
+\subsection{Hosting Setup}
+
+- Containerization and Container Orchestration
+- Server setup
+    - How many nodes?
+    - Resources?
+    - Resource allocation
+    - Security
+    - etc...
+
+\subsection{HDFS, Kafka, Spark and MongoDb}
+
+– Purpose (Why?)
+– Context (When?)
+– Description (How?)
+
+- Distributed File System
+- Distributed Event Streaming
+- Large-scale data analytics
+- Distributed Database
+
+\subsection{Sentinel NDWI Scraper}
+
+– Purpose (Why?)
+– Context (When?)
+– Description (How?)
+
+\subsection{NDWI Analyzer}
+
+– Purpose (Why?)
+– Context (When?)
+– Description (How?)
+
+\subsection{WebAPI}
+
+\subsection{EcoBeach App}
 
 
 
 
 
-
-
-
-
-\subsection{Scraping and periodic tasks} \label{subsec:scraping-and-periodic-tasks}
-
-- What does it mean to scrape?
-- How is it possible to periodically run a task?
-- Use crontab as an example at this point. We are
-
-\subsection{Containerization and container orchestration}
-
-- What is containerization?
-- What is Container orchestration?
-- How does containerization and container orchestration help
-
-\subsection{Distributed File System}
-
-- What is Hadoop?
-- What is the purpose of hadoop?
-
-\subsection{Distributed Event Streaming}
-
-- What is Kafka?
-- What is the purpose of Kafka?
-
-\subsection{Large-scale data analytics}
-
-- What is Spark?
-- What is the purpose of Spark?
-
-\subsection{Distributed database}
-
-- What is MongoDB?
-- What is the purpose of mongodb?
-
-\subsection{Mobile Sensing in Mobile Apps}
-
-\section{Solution Description and Results}
-Describe the solution and test and evaluation results (note: remember to refer to what the video covers)
-
-\section{Deployment and hosting strategy}
-
-- How services are distributed on the servers?
-- Etc..
-
-\section{The Sentinel NDWI Scraper}
-
-\section{The NDWI Analyzer}
-
-\section{The WebAPI}
-
-\section{The Android Application}
