@@ -1,7 +1,7 @@
 \chapter{The Solution}
 
-In this chapter EcoBeach, a solution to the problem presented in \autoref{ch:the-problem}, will be described. EcoBeach is a highly resilient distributed system that can process satellite imagery in real-time and analyze the difference in water levels on given geo-locations.
-EcoBeach collects data from beach locations in Denmark, Sweden, Germany, and the United Kingdom. Limiting geo locations to beaches in select countries is a deliberate choice, as the available server resources currently restrict the solution's scalability.\medbreak
+In this chapter EcoBeach, a highly resilient distributed system that can process satellite imagery in real-time and analyze the difference in water levels on given geo-locations, will be presented. 
+EcoBeach collects data from beach locations (hence the name EcoBeach) in Denmark, Sweden, Germany, and the United Kingdom. Limiting geo locations to beaches in select countries is a deliberate choice, as the available server resources currently restrict the solution's scalability. \medbreak
 \noindent
 In \autoref{sec:solution-approach} \nameref{sec:solution-approach} EcoBeach will be described at a high-level. First, a summary of solutions to the sub-problems in \autoref{sec:problem-description} is given. Next, the infrastructure of EcoBeach is presented to show how the solutions to each of the sub-problems complement each other to provide a feasible solution to monitoring shorelines.
 
@@ -32,8 +32,10 @@ EcoBeach consists of services that each play a crucial role in monitoring shorel
 \noindent
 The services in EcoBeach were chosen or created to provide solutions to the sub-problems. Below a summary of each solution to the sub-problems is presented.
 
-\paragraph{How to download satellite images from Cupernicus?} To download satellite images from Cupernicus we created a resilient scraping service that can be run periodically to download and pre-process satellite images on given geo locations. The solution approach for this sub-problem is described at a high-level in \autoref{subsec:scraping-and-periodic-tasks}.
-\paragraph{How to process images so water is differentiated from land?}
+\paragraph{How to download satellite images from Copernicus?} To download satellite images from Copernicus we created a resilient scraping service that continously downloads and pre-processes satellite images on given geo-locations. The scraping service is described in detail in \autoref{subsec:sentinel-satellite-scraper}.
+
+\paragraph{How to process images so water is differentiated from land?} For this purpose we create a Spark Job, that analyzes downloaded sattelite images utlizing a water based NDWI \todo{gls usage} filter, to determine what is water or land. The NDWI Analyzer is described in \autoref{subsec:ndwi-analyzer}.
+
 \paragraph{How to build a system capable of handling huge amounts of data?}
 \paragraph{How to build a system capable of real-time processing?}
 \paragraph{How to build a highly resilient system?}
@@ -76,13 +78,13 @@ In this section, an in-depth description of the solution is presented.  First, t
 - Large-scale data analytics
 - Distributed Database
 
-\subsection{Sentinel Satellite Scraper}
+\subsection{Sentinel Satellite Scraper}\label{subsec:sentinel-satellite-scraper}
 
 – Purpose (Why?)
 – Context (When?)
 – Description (How?)
 
-\subsection{NDWI Analyzer}
+\subsection{NDWI Analyzer}\label{subsec:ndwi-analyzer}
 
 – Purpose (Why?)
 – Context (When?)
