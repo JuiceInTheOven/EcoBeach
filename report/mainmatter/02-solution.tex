@@ -152,12 +152,13 @@ After having downloaded products, combined bands, and cropped the resulting imag
     \label{fig:sentinel-satellite-scraper-pre-processing}
 \end{figure}
 
-First, the desired image name and path of the pre-processed images are constructed from the downloaded images from the \emph{sentinelloader}. Then the downloaded images are passed on to the \emph{processImage(...)} method that first creates a new image from one of the downloaded images. The new image is combined with a black and white color map that paints any pixel with an \acrshort{ndwi} value greater than 0.6 white, and any pixel with an \acrshort{ndwi} value smaller than 0.6 black. One of these images can be seen in \autoref{fig:sentinel-satellite-scraper-processed-image}.
+First, the desired image name and path of the pre-processed images are constructed from the downloaded images from the \emph{sentinelloader}. Then the downloaded images are passed on to the \emph{processImage(...)} method that first creates a new image from one of the downloaded images. The new image is combined with a black and white color map that paints any pixel with an \acrshort{ndwi} value greater than 0.6 white, and any pixel with an \acrshort{ndwi} value smaller than 0.6 black. Two of these images can be seen in \autoref{fig:sentinel-satellite-scraper-processed-image}.
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=\textwidth]{sentinel-satellite-scraper-pre-processing.png}
-    \caption{A processed image with the black and white colormap applied.}
+    \fbox{\includegraphics[width=0.4\textwidth]{DK-EJERSLEVLYNG-2021-10-13.png}}
+    \fbox{\includegraphics[width=0.4\textwidth]{DK-GLSTRANDSKOV-2021-09-08.png}}
+    \caption{Processed images of Ejerslevlyng (left) and Gl Strandskov (right) beaches in DK with the black and white colormap applied.}
     \label{fig:sentinel-satellite-scraper-processed-image}
 \end{figure}
 
