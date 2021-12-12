@@ -16,7 +16,7 @@ EcoBeach consists of services that each play a crucial role in monitoring shorel
     \begin{tabular}{| p{0.25\linewidth} | p{0.7\linewidth} |}
         \hline
         \textbf{Service name}      & \textbf{Service description}                                                                                                              \\ \hline
-        Sentinel Satellite Scraper & A python script that downloads and pre-processes sattelite imagery                                                                        \\\hline
+        Sentinel Satellite Scraper & A python script that downloads and pre-processes satellite imagery                                                                        \\\hline
         NDWI Analyzer              & A Spark job that analyzes the pre-processed sattelite images to provide data on shoreline changes.                                        \\\hline
         Kafka                      & A distributed event streaming service, where intermediary data is saved as part of the processing pipeline.                               \\\hline
         Spark                      & A large-scale data analytics framework that supports publishing jobs that are processed on distributed Spark Workers.                     \\\hline
@@ -82,26 +82,81 @@ In this section, an in-depth description of the solution is presented.  First, t
 - Distributed Database
 
 \subsection{Sentinel Satellite Scraper}\label{subsec:sentinel-satellite-scraper}
+The \acrfull{sss} is a python script created to scrape and continuously download satellite imagery from given geo-locations. The script was created as EcoBeach relies on the analysis of geo-locations to determine how shorelines are changing. Because of this, it requires a steady input of data to reliable show how shorelines historically and currently have changed.\\\\
+\noindent
+The \acrshort{sss} runs every week to scrape satellite images for beaches in Denmark, Sweden, Germany, and Great Britain. Each subsequent run scrapes imagery three years back from the current date. It only downloads images that the EcoBeach pipeline has not previously processed by caching completed work. Subsequent runs are much faster due to this caching strategy. \\\\
+\noindent
+To understand the intricacies of the \acrshort{sss}, one must understand the format of the data downloaded from the Sentinel Satellite. It is important to mention the script downloads satellite imagery from the Sentinel-2 satellite.
 
-The Sentinel Satellite Scraper is python script created to scrape and download satellite imagery from given geo-locations continuously. The script was created as EcoBeach relies on the analysis of geo-locations to determine how shorelines are changing. Because of this, it requires a steady input of data to reliable show how shorelines historically and currently have changed.
+\subsubsection{Sentinel-2 satellite data products}
 
-The Sentinel Satellite Scraper is set to run every week to scrape satellite images for beaches in Denmark, Sweden, Germany, and Great Britain. Each subsequent run scrapes imagery three years back from the current data. It only downloads images that the EcoBeach pipeline has not previously processed by caching completed work. Subsequent runs are much faster due to this caching strategy.
+The Sentinel-2 satellite has two types of products available for download. The two product types are Level-1C and Level-2A as illustrated in \autoref{tab:sentinel-2-product-types}.
 
-Sentinel Satellite Scraper relies on quite a few python libraries to support downloading satellite images, pre-processing these images, and producing messages to kafka. The most important ones are \emph{sentinelloader}, \emph{gdal}, \emph{kafka-python}.\\
-The sentinelloader library is a library that wraps the official sentinel python library \emph{sentinelsat}, to provide a much easier interface to download, crop, and cache satellite images. It allows all of this through a single call to its \emph{.getRegionHistory(...)} method.
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{| p{0.15\linewidth} | p{0.35\linewidth} | p{0.35\linewidth} |p{0.15\linewidth} |}
+        \hline
+        \textbf{Product name} & \textbf{High-level Description} & \textbf{Data Volume} \\ \hline
+        Level-1C              & Top-of-atmosphere               & 600MB — 100x100 km2  \\\hline
+        Level-2A              & Bottom-of-atmosphere            & 800MB — 100x100 km2  \\\hline
+    \end{tabular}
+    \caption{Adapted from https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2/data-products}
+    \label{tab:sentinel-2-product-types}
+\end{table}
 
+EcoBeach relies on data analysis of Level-2A products, as these are ground images and not atmospheric images. The Level-2A products can be downloaded in 3 different spatial resolutions, 10m, 20m, 60m, all as tiles that cover 100x100 $km^2$. The spatial resolution defines how many cubic meters each pixel covers and what spectral bands are available. Naturally, the lower the spatial resolution is, the more detailed the product is. However, it also increases its size to $\sim 1GB$ per product at 10m spatial resolution. \\
 
+As previously mentioned each spatial resolution contains different spectral bands. The 10m spectral resolution is the one the \acrshort{sss} uses, and it contains four spectral bands: band 2, band 3, band 4 and band 8, which defines spectral colors the Sentinel-2 Satellite is able to capture. The specifications of these bands can be seen in \autoref{tab:sentinel-2-10m-bands}
 
-gdal
-geopandas
-rasterio
-shapely
-cartopy
-opencv-python
-openpyxl
-sentinelsat
-kafka-python
-hdfs
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{| p{0.1\linewidth} | p{0.3\linewidth} | p{0.3\linewidth} | p{0.3\linewidth} |}
+        \hline
+        \textbf{Band} & \textbf{Central wavelength} & \textbf{Color}                   \\ \hline
+        B2            & 496.6 nm                    & Blue                             \\ \hline
+        B3            & 560.0 nm                    & Green                            \\ \hline
+        B4            & 664.5 nm                    & Red                              \\ \hline
+        B8            & 836.1 nm                    & Visible and Near Infrared (VNIR) \\ \hline
+    \end{tabular}
+    \caption{Adapted from https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2/data-products}
+    \label{tab:sentinel-2-10m-bands}
+\end{table}
+
+\subsubsection{The implementation and design}
+
+\acrshort{sss} uses quite a few python libraries to download products, combine bands, pre-processing, and producing kafka messages. The first and arguably the most important is the \emph{sentinelloader} library. The \emph{sentinelloader} library is in control the logic related to downloading the products from Sentinel-2, combining bands, and cropping the resulting image to the location of interest. Lets first have a look at the entry point of the script the \emph{scrape(args)} method in \autoref{fig:sentinel-satellite-scraper-scrape}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{sentinel-satellite-scraper-scrape.png}
+    \caption{The \emph{scrape(args)} methodh that is the entry point of the \acrshort{sss}.}
+    \label{fig:sentinel-satellite-scraper-scrape}
+\end{figure}
+
+The scrape method first instantiates the \emph{Sentinel2Loader} from the \emph{sentinelloader} library with the folder to download products too, the Copernicus user, the desired cloud coverage percentage, and the log level. After this the locations to scrape for are read in from one of many excel files located in the scrapers directory. Each of these Excel files contains geolocations on beaches in a specific country. After this, the main scraping loop begins, where it randomly selects a non-processed beach and proceeds. This is a deliberate choice as the Copernicus API restricts the number of offline products that can be downloaded to 20 each day, and mixing up which locations we query historical data from ensures we use this retries on differently each time the script is run.
+Next the different needed parameters are extracted from the excel data, and the process of downloading products, combining bands, and cropping the resulting images is started by the \emph{getRegionHistory(...)} method call. This call is called with the country code, the location name, a search area which is a geoshape that defines the boundary of the location of interest, the index we want to use to combine bands, the spatial resolution, the from date and lastly the to date.
+As illustrated the combination of bands happens accordingly to the \acrfull{ndwi}. The \acrshort{ndwi} combines the bands into an image that differentiates water from land. The \acrshort{ndwi} uses a simple formula to combine band 3 and band 8 to give a value between 0 and 1 for each pixel that indicates the chance of that pixel being either water or land.
+
+\[ NDWI = \dfrac{B3 - B8}{B3 + B8} \]
+
+Furthermore, the cropping of the image relies on the provided geo polygon that defines the boundaries of the location of interest. It automatically crops out this location of interest from the downloaded product(s). In cases where the location of interest covers multiple products, the \emph{sentinelloader} library is able to download, combine and crop the image from various products, so no data is lost.
+
+After having downloaded products, combined bands and cropped the resulting image, custom pre-processing is done on the resulting image, to color it based on the \acrshort{NDWI} values, and to ensure the image size is as compact as possible. This work happens in the \emph{processGeoTiffImages(...)}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{sentinel-satellite-scraper-pre-processing.png}
+    \caption{The \emph{scrape(args)} methodh that is the entry point of the \acrshort{sss}.}
+    \label{fig:sentinel-satellite-scraper-pre-processing}
+\end{figure}
+
+%https://sentinel.esa.int/documents/247904/685211/Sentinel-2-Products-Specification-Document
+
+%https://gisgeography.com/sentinel-2-bands-combinations/
+
+%https://en.wikipedia.org/wiki/Normalized_difference_water_index
+
+This could be a data storage problem, but the \acrshort{sss} does not need to save these large products in order to pre-process them, and thus the products can safely be removed whenever they have been processed. Removal of processed images enable us to enjoy the extra detail that 10m imagery provides, and it is very useful to increase the precision of the results.
 
 \subsection{NDWI Analyzer}\label{subsec:ndwi-analyzer}
 

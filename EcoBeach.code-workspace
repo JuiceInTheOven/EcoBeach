@@ -10,6 +10,10 @@
 			"Maeslantkering",
 			"pyspark",
 			"struct"
-		]
+		],
+		"codesnap.showWindowControls": false,
+		"codesnap.boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px",
+		"codesnap.transparentBackground": true,
+		"codesnap.roundedCorners": true
 	}
 }
