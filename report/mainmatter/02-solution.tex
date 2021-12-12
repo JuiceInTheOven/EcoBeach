@@ -104,7 +104,7 @@ The Sentinel-2 satellite has two types of products available for download. The t
     \label{tab:sentinel-2-product-types}
 \end{table}
 
-EcoBeach relies on data analysis of Level-2A products, as these are ground images and not atmospheric images. The Level-2A products can be downloaded in 3 different spatial resolutions, 10m, 20m, 60m, all as tiles that cover 100x100 $km^2$. The spatial resolution defines how many cubic meters each pixel covers and what spectral bands are available. Naturally, the lower the spatial resolution is, the more detailed the product is. However, it also increases its size to $\sim 1GB$ per product at 10m spatial resolution. \\
+EcoBeach relies on of Level-2A products, as these are ground images and not atmospheric images. The Level-2A products can be downloaded in 3 different spatial resolutions, 10m, 20m, 60m, all as tiles that cover 100x100 $km^2$. The spatial resolution defines how many cubic meters each pixel covers and what spectral bands are available. Naturally, the lower the spatial resolution is, the more detailed the product is. However, it also increases its size to $\sim 1GB$ per product at 10m spatial resolution. \\
 
 As previously mentioned each spatial resolution contains different spectral bands. The 10m spectral resolution is the one the \acrshort{sss} uses, and it contains four spectral bands: band 2, band 3, band 4 and band 8, which defines spectral colors the Sentinel-2 Satellite is able to capture. The specifications of these bands can be seen in \autoref{tab:sentinel-2-10m-bands}
 
@@ -124,7 +124,7 @@ As previously mentioned each spatial resolution contains different spectral band
 
 \subsubsection{The implementation and design}
 
-\acrshort{sss} uses quite a few python libraries to download products, combine bands, pre-processing, and producing kafka messages. The first and arguably the most important is the \emph{sentinelloader} library. The \emph{sentinelloader} library is in control the logic related to downloading the products from Sentinel-2, combining bands, and cropping the resulting image to the location of interest. Lets first have a look at the entry point of the script the \emph{scrape(args)} method in \autoref{fig:sentinel-satellite-scraper-scrape}.
+\acrshort{sss} uses quite a few python libraries to download products, combine bands, pre-processing, and producing kafka messages. The first and arguably the most important is the \emph{sentinelloader} library. The \emph{sentinelloader} library is in control of the logic related to downloading the products from Sentinel-2, combining bands, and cropping the resulting image to the location of interest. Lets first have a look at the entry point of the script the \emph{scrape(args)} method in \autoref{fig:sentinel-satellite-scraper-scrape}.
 
 \begin{figure}[h!]
     \centering
@@ -133,30 +133,41 @@ As previously mentioned each spatial resolution contains different spectral band
     \label{fig:sentinel-satellite-scraper-scrape}
 \end{figure}
 
-The scrape method first instantiates the \emph{Sentinel2Loader} from the \emph{sentinelloader} library with the folder to download products too, the Copernicus user, the desired cloud coverage percentage, and the log level. After this the locations to scrape for are read in from one of many excel files located in the scrapers directory. Each of these Excel files contains geolocations on beaches in a specific country. After this, the main scraping loop begins, where it randomly selects a non-processed beach and proceeds. This is a deliberate choice as the Copernicus API restricts the number of offline products that can be downloaded to 20 each day, and mixing up which locations we query historical data from ensures we use this retries on differently each time the script is run.
+The scrape method first instantiates the \emph{Sentinel2Loader} from the \emph{sentinelloader} library with the folder to download products too, the Copernicus user, the desired cloud coverage percentage, and the log level. After this the locations to scrape for are read in from one of many excel files located in the scrapers directory. Each of these Excel files contains geolocations on beaches in a specific country. After this, the main scraping loop begins, where it randomly selects a non-processed beach and proceeds. This is a deliberate choice as the Copernicus API restricts the number of offline products that can be downloaded to 20 each day, and mixing up which locations we query historical data from ensures we use the offline product retrievals differently each time the script is run.
+
 Next the different needed parameters are extracted from the excel data, and the process of downloading products, combining bands, and cropping the resulting images is started by the \emph{getRegionHistory(...)} method call. This call is called with the country code, the location name, a search area which is a geoshape that defines the boundary of the location of interest, the index we want to use to combine bands, the spatial resolution, the from date and lastly the to date.
-As illustrated the combination of bands happens accordingly to the \acrfull{ndwi}. The \acrshort{ndwi} combines the bands into an image that differentiates water from land. The \acrshort{ndwi} uses a simple formula to combine band 3 and band 8 to give a value between 0 and 1 for each pixel that indicates the chance of that pixel being either water or land.
+
+As indicated by the ``NDWI\_MacFeeters`` parameter the combination of bands happens accordingly to the \acrfull{ndwi}. The MacFeeters formula for \acrshort{ndwi} combines the bands into an image that differentiates water from land. The \acrshort{ndwi} uses a simple formula to combine band 3 and band 8 to give a value between 0 and 1 for each pixel that indicates the chance of that pixel being either water or land.
 
 \[ NDWI = \dfrac{B3 - B8}{B3 + B8} \]
 
-Furthermore, the cropping of the image relies on the provided geo polygon that defines the boundaries of the location of interest. It automatically crops out this location of interest from the downloaded product(s). In cases where the location of interest covers multiple products, the \emph{sentinelloader} library is able to download, combine and crop the image from various products, so no data is lost.
+Furthermore, the cropping of the image relies on the provided geo polygon that defines the boundaries of the location of interest. It automatically crops out the location of interest from the downloaded product(s). In cases where the location of interest covers multiple products, the \emph{sentinelloader} library is able to download, combine and crop the image from various products, so no data is lost.
 
-After having downloaded products, combined bands and cropped the resulting image, custom pre-processing is done on the resulting image, to color it based on the \acrshort{NDWI} values, and to ensure the image size is as compact as possible. This work happens in the \emph{processGeoTiffImages(...)}.
+After having downloaded products, combined bands and cropped the resulting image, custom pre-processing is done on the resulting image, to color it based on the \acrshort{ndwi} values, and to ensure the image size is as compact as possible. This work happens in the \emph{processGeoTiffImages(...)}.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{sentinel-satellite-scraper-pre-processing.png}
-    \caption{The \emph{scrape(args)} methodh that is the entry point of the \acrshort{sss}.}
+    \caption{The \emph{scrape(args)} method that is the entry point of the \acrshort{sss}.}
     \label{fig:sentinel-satellite-scraper-pre-processing}
 \end{figure}
+
+First the desired image name and path of the pre-processed images is constructed from the downloaded images from the \emph{sentinelloader}. Then the downloaded images are passed on to the \emph{processImage(...)} method that first creates a new image from one of the downloaded images. The new image is combined with a black and white color map that paints any pixel with an \acrshort{ndwi} value greater than 0.6 white, and any pixel with an \acrshort{ndwi} value smaller than 0.6 black. One of these images can be seen in \autoref{fig:sentinel-satellite-scraper-processed-image}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{sentinel-satellite-scraper-pre-processing.png}
+    \caption{A processed image with the black and white colormap applied.}
+    \label{fig:sentinel-satellite-scraper-processed-image}
+\end{figure}
+
+Finally, the image along with relevant metadata is compressed to JSON and published to Kafka, and after this all downloaded satellite imagery is deleted to clear up valuable space for the next location to be processed. If this cleanup process is skipped the downloaded products would quickly fill up remaining disk space on the machines where the script is run.
 
 %https://sentinel.esa.int/documents/247904/685211/Sentinel-2-Products-Specification-Document
 
 %https://gisgeography.com/sentinel-2-bands-combinations/
 
 %https://en.wikipedia.org/wiki/Normalized_difference_water_index
-
-This could be a data storage problem, but the \acrshort{sss} does not need to save these large products in order to pre-process them, and thus the products can safely be removed whenever they have been processed. Removal of processed images enable us to enjoy the extra detail that 10m imagery provides, and it is very useful to increase the precision of the results.
 
 \subsection{NDWI Analyzer}\label{subsec:ndwi-analyzer}
 
