@@ -1,29 +1,32 @@
 \chapter{The Solution}
 
-In this chapter EcoBeach, a highly resilient distributed system that can process satellite imagery in real-time and analyze the difference in water levels on given geo-locations, will be presented. 
-EcoBeach collects data from beach locations (hence the name EcoBeach) in Denmark, Sweden, Germany, and the United Kingdom. Limiting geo locations to beaches in select countries is a deliberate choice, as the available server resources currently restrict the solution's scalability. \medbreak
+In this chapter EcoBeach, a highly resilient distributed system that can process satellite imagery in real-time and analyze the difference in water levels on given geo-locations, will be presented.
+EcoBeach collects data from beach locations (hence the name EcoBeach). Limiting geo locations to beaches in select countries is a deliberate choice, as the available server resources currently restrict the solution's scalability. \medbreak
 \noindent
 In \autoref{sec:solution-approach} \nameref{sec:solution-approach} EcoBeach will be described at a high-level. First, a summary of solutions to the sub-problems in \autoref{sec:problem-description} is given. Next, the infrastructure of EcoBeach is presented to show how the solutions to each of the sub-problems complement each other to provide a feasible solution to monitoring shorelines.
 
-Lastly, the advantages and disadvantages of EcoBeach will be presented, along with future work that can potentially alleviate some of the disadvantages.
+Lastly, the advantages and disadvantages of EcoBeach will be presented.
 
 \section{Solution Approach}\label{sec:solution-approach}
 
-EcoBeach consists of services that each play a crucial role in monitoring shorelines. There is a total of 8\todo{just correct this if I am wrong} services as shown in \autoref{tab:ecobeach-services}.
+EcoBeach consists of services that each play a crucial role in monitoring shorelines. There is a total of 11\todo{just correct this if I am wrong} services as shown in \autoref{tab:ecobeach-services}.
 
 \begin{table}[]
     \centering
-    \begin{tabular}{|l|l|}
+    \begin{tabular}{| p{0.25\linewidth} | p{0.7\linewidth} |}
         \hline
-        \textbf{Service name}   & \textbf{Service description} \\ \hline
-        Sentinel NDWI Scraper   &                              \\\hline
-        Kafka                   &                              \\\hline
-        Hadoop                  &                              \\\hline
-        Zookeeper               &                              \\\hline
-        MongoDB                 &                              \\\hline
-        MongoDB Kafka Connector &                              \\\hline
-        WebAPI                  &                              \\\hline
-        Android Application     &                              \\\hline
+        \textbf{Service name}      & \textbf{Service description}                                                                                                              \\ \hline
+        Sentinel Satellite Scraper & A python script that downloads and pre-processes sattelite imagery                                                                        \\\hline
+        NDWI Analyzer              & A Spark job that analyzes the pre-processed sattelite images to provide data on shoreline changes.                                        \\\hline
+        Kafka                      & A distributed event streaming service, where intermediary data is saved as part of the processing pipeline.                               \\\hline
+        Spark                      & A large-scale data analytics framework that supports publishing jobs that are processed on distributed Spark Workers.                     \\\hline
+        Hadoop                     & A framework that allows distributed file storage primarily with HDFS. Used for saving checkpoints and the pre-processed satellite images. \\\hline
+        Zookeeper                  & A centralized service to enable reliable distributed coordination for Hadoop and Kafka.                                                   \\\hline
+        MongoDB                    & A distributed database, to save and query fully processed data.                                                                           \\\hline
+        MongoDB Kafka Connector    & A sink connector for Kafka to feed fully processed data from Kafka to MongoDB                                                             \\\hline
+        Kowl                       & An intuitive monitoring service that allows us to see and configure our running Kafka services.                                           \\\hline
+        WebAPI                     & A .NET WebAPI to provide a nice interface for querying data from MongoDB                                                                  \\\hline
+        Android Application        & The EcoBeach app where fully processed data is represented with the google maps interface.                                                \\\hline
     \end{tabular}
     \caption{The services that make up EcoBeach}
     \label{tab:ecobeach-services}
@@ -32,14 +35,17 @@ EcoBeach consists of services that each play a crucial role in monitoring shorel
 \noindent
 The services in EcoBeach were chosen or created to provide solutions to the sub-problems. Below a summary of each solution to the sub-problems is presented.
 
-\paragraph{How to download satellite images from Copernicus?} To download satellite images from Copernicus we created a resilient scraping service that continously downloads and pre-processes satellite images on given geo-locations. The scraping service is described in detail in \autoref{subsec:sentinel-satellite-scraper}.
+\paragraph{How to download satellite images from Copernicus?} To download satellite images from Copernicus we created a resilient scraping service that continuously downloads and pre-processes satellite images on given geo-locations. The scraping service is described in detail in \autoref{subsec:sentinel-satellite-scraper}.
 
-\paragraph{How to process images so water is differentiated from land?} For this purpose we create a Spark Job, that analyzes downloaded sattelite images utlizing a water based NDWI \todo{gls usage} filter, to determine what is water or land. The NDWI Analyzer is described in \autoref{subsec:ndwi-analyzer}.
+\paragraph{How to process images, so water is differentiated from land?} For this purpose, we created the NDWI Analyzer, which is a Spark Job, that analyzes downloaded satellite images utilizing a water-based NDWI \todo{gls usage} filter to determine what is water or land. The NDWI Analyzer is described in \autoref{subsec:ndwi-analyzer}.
 
-\paragraph{How to build a system capable of handling huge amounts of data?}
-\paragraph{How to build a system capable of real-time processing?}
-\paragraph{How to build a highly resilient system?}
-\paragraph{How to build a mobile application that uses mobile sensing in a meaningful way to visualize shoreline changes?}
+\paragraph{How to build a system capable of handling huge amounts of data?} To create a system capable of large-scale data processing and analysis, we created a stack that relies on distributed systems that are very scalable and fault-tolerant. The stack includes Kafka, Spark, Hadoop, Zookeeper, and MongoDb.
+
+\paragraph{How to build a system capable of real-time processing?} The main contributor to this is Kafka and Spark. Kafka allows us to create topics with intermediary data, where our NDWI Analyzer Spark Job is set up as a consumer that processes new entries as they are created. Together with the rest of the stack, it allows us to create, process, and feed data to MongoDB quickly and reliably as new data is entering the system.
+
+\paragraph{How to build a highly resilient system?} To make EcoBeach a resilient system, we identified single-points of failure and added load-balancing and distribution of services to ensure that the system would function reliably in case of failures. Docker Swarm as the chosen container orchestration tool was a massive help in configuring this.
+
+\paragraph{How to build a mobile application that uses mobile sensing in a meaningful way to visualize shoreline changes?} To make the EcoBeach app utilize mobile sensing, we made the app rely on the user's current location and provide data accordingly. As the EcoBeach app is an Android applicaiton the Google Maps API is what the app relies on to provide most of its features.
 
 \subsection{The infrastruture}
 - Present the infrastructure diagram
@@ -50,22 +56,19 @@ The services in EcoBeach were chosen or created to provide solutions to the sub-
 - Advantages of the solution
 - Disadvantages of the solution
 
-\subsection{Future work}
-- Future work
-
 \section{Solution Description}
 
-In this section, an in-depth description of the solution is presented.  First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, or process data in EcoBeach are presented.
+In this section, an in-depth description of the solution is presented.  First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, process and visualize data in EcoBeach are presented.
 
 \subsection{Hosting Setup}
 
 - Containerization and Container Orchestration
 - Server setup
-    - How many nodes?
-    - Resources?
-    - Resource allocation
-    - Security
-    - etc...
+- How many nodes?
+- Resources?
+- Resource allocation
+- Security
+- etc...
 
 \subsection{HDFS, Kafka, Spark and MongoDb}
 
@@ -80,9 +83,25 @@ In this section, an in-depth description of the solution is presented.  First, t
 
 \subsection{Sentinel Satellite Scraper}\label{subsec:sentinel-satellite-scraper}
 
-– Purpose (Why?)
-– Context (When?)
-– Description (How?)
+The Sentinel Satellite Scraper is python script created to scrape and download satellite imagery from given geo-locations continuously. The script was created as EcoBeach relies on the analysis of geo-locations to determine how shorelines are changing. Because of this, it requires a steady input of data to reliable show how shorelines historically and currently have changed.
+
+The Sentinel Satellite Scraper is set to run every week to scrape satellite images for beaches in Denmark, Sweden, Germany, and Great Britain. Each subsequent run scrapes imagery three years back from the current data. It only downloads images that the EcoBeach pipeline has not previously processed by caching completed work. Subsequent runs are much faster due to this caching strategy.
+
+Sentinel Satellite Scraper relies on quite a few python libraries to support downloading satellite images, pre-processing these images, and producing messages to kafka. The most important ones are \emph{sentinelloader}, \emph{gdal}, \emph{kafka-python}.\\
+The sentinelloader library is a library that wraps the official sentinel python library \emph{sentinelsat}, to provide a much easier interface to download, crop, and cache satellite images. It allows all of this through a single call to its \emph{.getRegionHistory(...)} method.
+
+
+
+gdal
+geopandas
+rasterio
+shapely
+cartopy
+opencv-python
+openpyxl
+sentinelsat
+kafka-python
+hdfs
 
 \subsection{NDWI Analyzer}\label{subsec:ndwi-analyzer}
 
