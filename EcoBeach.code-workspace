@@ -6,14 +6,18 @@
 	],
 	"settings": {
 		"cSpell.words": [
+			"Feeters",
 			"hdfs",
+			"Kowl",
 			"Maeslantkering",
 			"pyspark",
+			"sentinelloader",
 			"struct"
 		],
 		"codesnap.showWindowControls": false,
 		"codesnap.boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px",
 		"codesnap.transparentBackground": true,
-		"codesnap.roundedCorners": true
+		"codesnap.roundedCorners": true,
+		"latex-workshop.message.badbox.show":false
 	}
 }

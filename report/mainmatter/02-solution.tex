@@ -1,6 +1,6 @@
 \chapter{The Solution}
 
-In this chapter EcoBeach, a highly resilient distributed system that can process satellite imagery in real-time and analyze the difference in water levels on given geo-locations, will be presented.
+This chapter will present EcoBeach, a highly resilient distributed system that can process satellite imagery in real-time and analyze the difference in water levels on given geo-locations.
 EcoBeach collects data from beach locations (hence the name EcoBeach). Limiting geo locations to beaches in select countries is a deliberate choice, as the available server resources currently restrict the solution's scalability. \medbreak
 \noindent
 In \autoref{sec:solution-approach} \nameref{sec:solution-approach} EcoBeach will be described at a high-level. First, a summary of solutions to the sub-problems in \autoref{sec:problem-description} is given. Next, the infrastructure of EcoBeach is presented to show how the solutions to each of the sub-problems complement each other to provide a feasible solution to monitoring shorelines.
@@ -17,37 +17,37 @@ EcoBeach consists of services that each play a crucial role in monitoring shorel
         \hline
         \textbf{Service name}      & \textbf{Service description}                                                                                                              \\ \hline
         Sentinel Satellite Scraper & A python script that downloads and pre-processes satellite imagery                                                                        \\\hline
-        NDWI Analyzer              & A Spark job that analyzes the pre-processed sattelite images to provide data on shoreline changes.                                        \\\hline
+        NDWI Analyzer              & A Spark job that analyzes pre-processed satellite images for shoreline changes.                                        \\\hline
         Kafka                      & A distributed event streaming service, where intermediary data is saved as part of the processing pipeline.                               \\\hline
         Spark                      & A large-scale data analytics framework that supports publishing jobs that are processed on distributed Spark Workers.                     \\\hline
         Hadoop                     & A framework that allows distributed file storage primarily with HDFS. Used for saving checkpoints and the pre-processed satellite images. \\\hline
         Zookeeper                  & A centralized service to enable reliable distributed coordination for Hadoop and Kafka.                                                   \\\hline
-        MongoDB                    & A distributed database, to save and query fully processed data.                                                                           \\\hline
+        MongoDB                    & A distributed database to save and query fully processed data.                                                                           \\\hline
         MongoDB Kafka Connector    & A sink connector for Kafka to feed fully processed data from Kafka to MongoDB                                                             \\\hline
-        Kowl                       & An intuitive monitoring service that allows us to see and configure our running Kafka services.                                           \\\hline
+        Kowl                       & An intuitive monitoring service that allows viewing and configuring running Kafka services.                                           \\\hline
         WebAPI                     & A .NET WebAPI to provide a nice interface for querying data from MongoDB                                                                  \\\hline
         Android Application        & The EcoBeach app where fully processed data is represented with the google maps interface.                                                \\\hline
     \end{tabular}
-    \caption{The services that make up EcoBeach}
+    \caption{The services that in EcoBeach}
     \label{tab:ecobeach-services}
 \end{table}
 
 \noindent
 The services in EcoBeach were chosen or created to provide solutions to the sub-problems. Below a summary of each solution to the sub-problems is presented.
 
-\paragraph{How to download satellite images from Copernicus?} To download satellite images from Copernicus we created a resilient scraping service that continuously downloads and pre-processes satellite images on given geo-locations. The scraping service is described in detail in \autoref{subsec:sentinel-satellite-scraper}.
+\paragraph{How to download satellite images from Copernicus?} To download satellite images, we created a resilient scraping service that continuously downloads and pre-processes satellite images on given geo-locations. The scraping service is described in detail in \autoref{subsec:sentinel-satellite-scraper}.
 
-\paragraph{How to process images, so water is differentiated from land?} For this purpose, we created the NDWI Analyzer, which is a Spark Job, that analyzes downloaded satellite images utilizing a water-based NDWI \todo{gls usage} filter to determine what is water or land. The NDWI Analyzer is described in \autoref{subsec:ndwi-analyzer}.
+\paragraph{How to process images, so water is differentiated from land?} For this purpose, we pre-process images during the scraping process, so they are saved as black and white images according to their \acrfull{ndwi} value. Then we created the NDWI Analyzer, a Spark Job, that analyzes downloaded satellite images and counts the number of white versus black pixels to determine what is water or land. The NDWI Analyzer is described in \autoref{subsec:ndwi-analyzer}.
 
-\paragraph{How to build a system capable of handling huge amounts of data?} To create a system capable of large-scale data processing and analysis, we created a stack that relies on distributed systems that are very scalable and fault-tolerant. The stack includes Kafka, Spark, Hadoop, Zookeeper, and MongoDb.
+\paragraph{How to build a system capable of handling huge amounts of data?} To create a system capable of large-scale data processing and analysis, we created a stack that relies on distributed systems that are very scalable and fault-tolerant. The stack includes Kafka, Spark, Hadoop, Zookeeper, and MongoDB and is described in \autoref{subsec:the-stack}
 
 \paragraph{How to build a system capable of real-time processing?} The main contributor to this is Kafka and Spark. Kafka allows us to create topics with intermediary data, where our NDWI Analyzer Spark Job is set up as a consumer that processes new entries as they are created. Together with the rest of the stack, it allows us to create, process, and feed data to MongoDB quickly and reliably as new data is entering the system.
 
-\paragraph{How to build a highly resilient system?} To make EcoBeach a resilient system, we identified single-points of failure and added load-balancing and distribution of services to ensure that the system would function reliably in case of failures. Docker Swarm as the chosen container orchestration tool was a massive help in configuring this.
+\paragraph{How to build a highly resilient system?} To make EcoBeach a resilient system, we identified single-points of failure and added load-balancing and distribution of services to ensure that the system would function reliably in case of failures. Docker Swarm as the chosen container orchestration tool was a massive help in configuring this. This is described in more detail in \autoref{subsec:the-infrastructure} and \autoref{subsec:hosting-setup}.
 
-\paragraph{How to build a mobile application that uses mobile sensing in a meaningful way to visualize shoreline changes?} To make the EcoBeach app utilize mobile sensing, we made the app rely on the user's current location and provide data accordingly. As the EcoBeach app is an Android applicaiton the Google Maps API is what the app relies on to provide most of its features.
+\paragraph{How to build a mobile application that uses mobile sensing in a meaningful way to visualize shoreline changes?} To make the EcoBeach app utilize mobile sensing, we made the app rely on the user's current location and provide data accordingly. As the EcoBeach app is an Android application, the Google Maps API is what the app relies on to provide most of its features. The EcoBeach app is described in detail in \autoref{subsec:ecobeach-app}
 
-\subsection{The infrastruture}
+\subsection{The infrastruture}\label{subsec:the-infrastructure}
 - Present the infrastructure diagram
 - Explain the infrastructure diagram
 - dont go in depth here, thats what we have the Hosting Setup for.
@@ -58,9 +58,9 @@ The services in EcoBeach were chosen or created to provide solutions to the sub-
 
 \section{Solution Description}
 
-In this section, an in-depth description of the solution is presented.  First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, process and visualize data in EcoBeach are presented.
+In this section, an in-depth description of the solution is presented.  First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, process, and visualize data in EcoBeach are presented.
 
-\subsection{Hosting Setup}
+\subsection{Hosting Setup} \label{subsec:hosting-setup}
 
 - Containerization and Container Orchestration
 - Server setup
@@ -70,7 +70,7 @@ In this section, an in-depth description of the solution is presented.  First, t
 - Security
 - etc...
 
-\subsection{HDFS, Kafka, Spark and MongoDb}
+\subsection{HDFS, Kafka, Spark and MongoDb} \label{subsec:the-stack}
 
 – Purpose (Why?)
 – Context (When?)
@@ -86,7 +86,7 @@ The \acrfull{sss} is a python script created to scrape and continuously download
 \noindent
 The \acrshort{sss} runs every week to scrape satellite images for beaches in Denmark, Sweden, Germany, and Great Britain. Each subsequent run scrapes imagery three years back from the current date. It only downloads images that the EcoBeach pipeline has not previously processed by caching completed work. Subsequent runs are much faster due to this caching strategy. \\\\
 \noindent
-To understand the intricacies of the \acrshort{sss}, one must understand the format of the data downloaded from the Sentinel Satellite. It is important to mention the script downloads satellite imagery from the Sentinel-2 satellite.
+To understand the intricacies of the \acrshort{sss}, one must understand the format of the data downloaded from the Sentinel Satellite. It is essential to mention the script downloads satellite imagery from the Sentinel-2 satellite.
 
 \subsubsection{Sentinel-2 satellite data products}
 
@@ -104,9 +104,9 @@ The Sentinel-2 satellite has two types of products available for download. The t
     \label{tab:sentinel-2-product-types}
 \end{table}
 
-EcoBeach relies on of Level-2A products, as these are ground images and not atmospheric images. The Level-2A products can be downloaded in 3 different spatial resolutions, 10m, 20m, 60m, all as tiles that cover 100x100 $km^2$. The spatial resolution defines how many cubic meters each pixel covers and what spectral bands are available. Naturally, the lower the spatial resolution is, the more detailed the product is. However, it also increases its size to $\sim 1GB$ per product at 10m spatial resolution. \\
+EcoBeach relies on Level-2A products, as these are ground images and not atmospheric images. The Level-2A products can be downloaded in 3 different spatial resolutions, 10m, 20m, 60m, all as tiles covering 100x100 $km^2$. The spatial resolution defines how many cubic meters each pixel covers and what spectral bands are available. Naturally, the lower the spatial resolution is, the more detailed the product is. However, it also increases its size to $\sim 1GB$ per product at 10m spatial resolution. \\
 
-As previously mentioned each spatial resolution contains different spectral bands. The 10m spectral resolution is the one the \acrshort{sss} uses, and it contains four spectral bands: band 2, band 3, band 4 and band 8, which defines spectral colors the Sentinel-2 Satellite is able to capture. The specifications of these bands can be seen in \autoref{tab:sentinel-2-10m-bands}
+As previously mentioned, each spatial resolution contains different spectral bands. The 10m spectral resolution is the one the \acrshort{sss} uses, and it includes four spectral bands: band 2, band 3, band 4, and band 8, which defines the different wavelengths the Sentinel-2 Satellite can capture. The specifications of these bands can be seen in \autoref{tab:sentinel-2-10m-bands}
 
 \begin{table}[h!]
     \centering
@@ -124,7 +124,7 @@ As previously mentioned each spatial resolution contains different spectral band
 
 \subsubsection{The implementation and design}
 
-\acrshort{sss} uses quite a few python libraries to download products, combine bands, pre-processing, and producing kafka messages. The first and arguably the most important is the \emph{sentinelloader} library. The \emph{sentinelloader} library is in control of the logic related to downloading the products from Sentinel-2, combining bands, and cropping the resulting image to the location of interest. Lets first have a look at the entry point of the script the \emph{scrape(args)} method in \autoref{fig:sentinel-satellite-scraper-scrape}.
+\acrshort{sss} uses quite a few python libraries to download products, combine bands, pre-processing, and produce Kafka messages. The first and arguably the most important is the \emph{sentinelloader} library. The \emph{sentinelloader} library is in control of the logic related to downloading the products from Sentinel-2, combining bands, and cropping the resulting image to the location of interest. Lets first have a look at the entry point of the script the \emph{scrape(args)} method in \autoref{fig:sentinel-satellite-scraper-scrape}.
 
 \begin{figure}[h!]
     \centering
@@ -133,17 +133,17 @@ As previously mentioned each spatial resolution contains different spectral band
     \label{fig:sentinel-satellite-scraper-scrape}
 \end{figure}
 
-The scrape method first instantiates the \emph{Sentinel2Loader} from the \emph{sentinelloader} library with the folder to download products too, the Copernicus user, the desired cloud coverage percentage, and the log level. After this the locations to scrape for are read in from one of many excel files located in the scrapers directory. Each of these Excel files contains geolocations on beaches in a specific country. After this, the main scraping loop begins, where it randomly selects a non-processed beach and proceeds. This is a deliberate choice as the Copernicus API restricts the number of offline products that can be downloaded to 20 each day, and mixing up which locations we query historical data from ensures we use the offline product retrievals differently each time the script is run.
+The scraping method first instantiates the \emph{Sentinel2Loader} from the \emph{sentinelloader} library with the folder to download products too, the Copernicus user, the desired cloud coverage percentage, and the log level. After this, the locations to scrape for are read in from one of many excel files located in the scrapers directory. Each of these Excel files contains geo-locations on beaches in a specific country. After this, the main scraping loop begins, where it randomly selects a non-processed beach and proceeds. Randomly selecting a beach is a deliberate choice as the Copernicus API restricts the number of offline products that can be downloaded to 20 each day. Mixing up which locations we query historical data from ensures we use the offline product retrievals differently each time the script is run. Thus, we get historical data for different areas over time.
 
-Next the different needed parameters are extracted from the excel data, and the process of downloading products, combining bands, and cropping the resulting images is started by the \emph{getRegionHistory(...)} method call. This call is called with the country code, the location name, a search area which is a geoshape that defines the boundary of the location of interest, the index we want to use to combine bands, the spatial resolution, the from date and lastly the to date.
+Next, the different needed parameters are extracted from the excel data, and the process of downloading products, combining bands, and cropping the resulting images is started by the \emph{getRegionHistory(...)} method call. This call is called with the country code, the location name, a search area, a shape that defines the boundary of the location of interest, the index we want to combine bands, the spatial resolution, the from date, and lastly, the to date.
 
-As indicated by the ``NDWI\_MacFeeters`` parameter the combination of bands happens accordingly to the \acrfull{ndwi}. The MacFeeters formula for \acrshort{ndwi} combines the bands into an image that differentiates water from land. The \acrshort{ndwi} uses a simple formula to combine band 3 and band 8 to give a value between 0 and 1 for each pixel that indicates the chance of that pixel being either water or land.
+As indicated by the ``NDWI\_MacFeeters`` parameter, the combination of bands happens accordingly to the \acrfull{ndwi}. The MacFeeters formula for \acrshort{ndwi} combines the bands into an image that differentiates water from land. The \acrshort{ndwi} uses a simple formula to combine band 3 and band 8 to give a value between 0 and 1 for each pixel that indicates how likely that pixel is to be either water or land.
 
 \[ NDWI = \dfrac{B3 - B8}{B3 + B8} \]
 
-Furthermore, the cropping of the image relies on the provided geo polygon that defines the boundaries of the location of interest. It automatically crops out the location of interest from the downloaded product(s). In cases where the location of interest covers multiple products, the \emph{sentinelloader} library is able to download, combine and crop the image from various products, so no data is lost.
+Furthermore, the cropping of the image relies on the provided geo polygon that defines the boundaries of the location of interest. It automatically crops out the area of interest from the downloaded product(s). In cases where the place of interest covers multiple products, the \emph{sentinelloader} library can download, combine and crop the image from various products, so no data is lost.
 
-After having downloaded products, combined bands and cropped the resulting image, custom pre-processing is done on the resulting image, to color it based on the \acrshort{ndwi} values, and to ensure the image size is as compact as possible. This work happens in the \emph{processGeoTiffImages(...)}.
+After having downloaded products, combined bands, and cropped the resulting image, custom pre-processing is done on the resulting image to color it based on the \acrshort{ndwi} values and to ensure the image size is as compact as possible. This work happens in the \emph{processGeoTiffImages(...)}.
 
 \begin{figure}[h!]
     \centering
@@ -152,7 +152,7 @@ After having downloaded products, combined bands and cropped the resulting image
     \label{fig:sentinel-satellite-scraper-pre-processing}
 \end{figure}
 
-First the desired image name and path of the pre-processed images is constructed from the downloaded images from the \emph{sentinelloader}. Then the downloaded images are passed on to the \emph{processImage(...)} method that first creates a new image from one of the downloaded images. The new image is combined with a black and white color map that paints any pixel with an \acrshort{ndwi} value greater than 0.6 white, and any pixel with an \acrshort{ndwi} value smaller than 0.6 black. One of these images can be seen in \autoref{fig:sentinel-satellite-scraper-processed-image}.
+First, the desired image name and path of the pre-processed images are constructed from the downloaded images from the \emph{sentinelloader}. Then the downloaded images are passed on to the \emph{processImage(...)} method that first creates a new image from one of the downloaded images. The new image is combined with a black and white color map that paints any pixel with an \acrshort{ndwi} value greater than 0.6 white, and any pixel with an \acrshort{ndwi} value smaller than 0.6 black. One of these images can be seen in \autoref{fig:sentinel-satellite-scraper-processed-image}.
 
 \begin{figure}[h!]
     \centering
@@ -161,7 +161,7 @@ First the desired image name and path of the pre-processed images is constructed
     \label{fig:sentinel-satellite-scraper-processed-image}
 \end{figure}
 
-Finally, the image along with relevant metadata is compressed to JSON and published to Kafka, and after this all downloaded satellite imagery is deleted to clear up valuable space for the next location to be processed. If this cleanup process is skipped the downloaded products would quickly fill up remaining disk space on the machines where the script is run.
+Finally, the image and relevant metadata are compressed to JSON and published to Kafka. After this, all downloaded satellite imagery is deleted to clear up valuable space for processing the following location. If this cleanup process is skipped, the downloaded products would quickly fill up the remaining disk space on the machines where the script is run.
 
 %https://sentinel.esa.int/documents/247904/685211/Sentinel-2-Products-Specification-Document
 
@@ -177,7 +177,7 @@ Finally, the image along with relevant metadata is compressed to JSON and publis
 
 \subsection{WebAPI}
 
-\subsection{EcoBeach App}
+\subsection{EcoBeach App}\label{subsec:ecobeach-app}
 
 
 
