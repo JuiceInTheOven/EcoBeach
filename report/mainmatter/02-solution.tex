@@ -135,13 +135,13 @@ As previously mentioned, each spatial resolution contains different spectral ban
 
 The scraping method first instantiates the \emph{Sentinel2Loader} from the \emph{sentinelloader} library with the folder to download products too, the Copernicus user, the desired cloud coverage percentage, and the log level. After this, the locations to scrape for are read in from one of many excel files located in the scrapers directory. Each of these Excel files contains geo-locations on beaches in a specific country. After this, the main scraping loop begins, where it randomly selects a non-processed beach and proceeds. Randomly selecting a beach is a deliberate choice as the Copernicus API restricts the number of offline products that can be downloaded to 20 each day. Mixing up which locations we query historical data from ensures we use the offline product retrievals differently each time the script is run. Thus, we get historical data for different areas over time.
 
-Next, the different needed parameters are extracted from the excel data, and the process of downloading products, combining bands, and cropping the resulting images is started by the \emph{getRegionHistory(...)} method call. This call is called with the country code, the location name, a search area, a shape that defines the boundary of the location of interest, the index we want to combine bands, the spatial resolution, the from date, and lastly, the to date.
+Next, the different needed parameters are extracted from the excel data, and the process of downloading products, combining bands, and cropping the resulting images is started by the \emph{getRegionHistory(...)} method call. This call is called with the country code, the location name, a search area that defines the boundary of the location of interest, the index we want to combine bands, the spatial resolution, the from date, and lastly, the to date.
 
 As indicated by the ``NDWI\_MacFeeters`` parameter, the combination of bands happens accordingly to the \acrfull{ndwi}. The MacFeeters formula for \acrshort{ndwi} combines the bands into an image that differentiates water from land. The \acrshort{ndwi} uses a simple formula to combine band 3 and band 8 to give a value between 0 and 1 for each pixel that indicates how likely that pixel is to be either water or land.
 
 \[ NDWI = \dfrac{B3 - B8}{B3 + B8} \]
 
-Furthermore, the cropping of the image relies on the provided geo polygon that defines the boundaries of the location of interest. It automatically crops out the area of interest from the downloaded product(s). In cases where the place of interest covers multiple products, the \emph{sentinelloader} library can download, combine and crop the image from various products, so no data is lost.
+Furthermore, the cropping of the image relies on the provided searcg area that defines the boundaries of the location of interest. \emph{Sentinelloader} automatically crops out the area of interest from the downloaded product(s). In cases where the place of interest covers multiple products, the \emph{sentinelloader} library can download, combine and crop the image from various products, so no data is lost.
 
 After having downloaded products, combined bands, and cropped the resulting image, custom pre-processing is done on the resulting image to color it based on the \acrshort{ndwi} values and to ensure the image size is as compact as possible. This work happens in the \emph{processGeoTiffImages(...)}.
 
@@ -172,9 +172,18 @@ Finally, the image and relevant metadata are compressed to JSON and published to
 
 \subsection{NDWI Analyzer}\label{subsec:ndwi-analyzer}
 
-– Purpose (Why?)
-– Context (When?)
-– Description (How?)
+The NDWI Analyzer is a python spark job created with the purpose of continuously consuming and analyze messages from Kafka to provide insight into what the scraped satellite images can tell us about the water content changes. EcoBeach relies on distributed Spark workers to handle this job, to efficiently analyze newly scraped satellite images, and feed the results back to Kafka.\\\\
+\noindent
+The NDWI Analyzer runs constantly and watches for changes to the Kafka topic ``ndwi\_images``. Whenever a new message is added to the topic, the NDWI Analyzer consumes this message, analyzes it, and produces a new message to the ``ndwi\_results`` topic that holds all data that the data pipeline has fully processed and is ready to be transferrred into MongoDB.\\\\
+\noindent
+The analysis is a three step process. First the black and white images in \autoref{fig:sentinel-satellite-scraper-processed-image} that are created by the \acrshort{sss} are recreated. The images are stored in the Kafka message that contains the image encrypted as byte64. Then all white and black pixels are counted in the image, and lastly the percentage and area of both white and black pixels is calculated. The relevant code is shown in \autoref{fig:ndwi-analyzer-code}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{ndwi-analyzer-code.png}
+    \caption{The code that recreates the black-and-white images, counts pixels and calculates percentage and area of water and land.}
+    \label{fig:ndwi-analyzer-code}
+\end{figure}
 
 \subsection{WebAPI}
 
