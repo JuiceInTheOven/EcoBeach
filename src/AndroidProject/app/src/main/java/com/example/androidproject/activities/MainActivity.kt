@@ -25,6 +25,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import com.example.androidproject.models.ApiHandler
 import com.google.android.gms.location.*
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -170,10 +171,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 .snippet(",${userLocation.latitude},${userLocation.longitude},")
         )
 
-        val beaches = mutableListOf<Beach>()
-        beaches.add(Beach("Kerteminde Nordstrand", 55.4578631605276, 10.66580564769334, 0.0))
-        beaches.add(Beach("Hasmark Strand", 55.559144842780235, 10.466831402854728, 0.0))
-        beaches.add(Beach("Nordenhuse Strand", 55.37738690518388, 10.771233901499762, 0.0))
+//        val beaches = mutableListOf<Beach>()
+//        beaches.add(Beach("Kerteminde Nordstrand", 55.4578631605276, 10.66580564769334, 0.0))
+//        beaches.add(Beach("Hasmark Strand", 55.559144842780235, 10.466831402854728, 0.0))
+//        beaches.add(Beach("Nordenhuse Strand", 55.37738690518388, 10.771233901499762, 0.0))
+
+        val apiHandler = ApiHandler()
+        val beaches = apiHandler.getDatas()
 
         beaches.forEach { beach ->
             mMap.addMarker(

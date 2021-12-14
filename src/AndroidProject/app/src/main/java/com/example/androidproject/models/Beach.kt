@@ -9,7 +9,7 @@ class Beach(
     var Name: String = name
     var Lat: Double = lat
     var Lng: Double = lng
-    //var Change: Double = change
+    var Change: Double = change
 
     override fun toString(): String {
         return "$name,$lat,$lng,$change"
