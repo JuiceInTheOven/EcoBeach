@@ -1,7 +1,14 @@
 name: Build and test webapi
 
-on: [push, pull_request]
-
+on:
+  push:
+    paths:
+      - "src/Api/WebApi/**"
+      - ".github/workflows/build-and-test-webapi.yml"
+  pull_request:
+    paths:
+      - "src/Api/WebApi/**"
+      - ".github/workflows/build-and-test-webapi.yml"
 env:
   DOTNET_VERSION: '6.0.x'
 
@@ -20,11 +27,8 @@ jobs:
           include-prerelease: true
 
       - name: Build
-        run: dotnet build ./src/WebApi/WebApi.csproj --configuration Release
-
-      - name: Test
-        run: dotnet test ./src/WebApi.Test/WebApi.Test.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./lcov.info --configuration Release
-
+        run: dotnet build ./src/Api/WebApi/WebApi.csproj --configuration Release
+        
       - name: Publish codecoverage to CodeCov
         uses: codecov/codecov-action@v2.1.0
         with:

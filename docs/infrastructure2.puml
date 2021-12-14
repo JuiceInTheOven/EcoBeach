@@ -1,0 +1,52 @@
+@startuml
+node SentinelScraper
+queue KafkaStream
+node SparkImageAnalyzer
+node RestoreKafkaStream
+node WebAPI
+node AndroidApp
+circle KafkaConnectDB
+circle KafkaConnectParquet
+actor Users
+database DistributedDatabase
+database CockroachDB
+database MongoDB
+database Cassandra
+database CosmosDB
+storage HDFS {
+    database Parquet
+}
+
+SentinelScraper --> KafkaStream
+
+SparkImageAnalyzer <-- KafkaStream
+
+SparkImageAnalyzer --> KafkaStream
+
+KafkaStream --> KafkaConnectDB
+
+KafkaStream -> KafkaConnectParquet
+
+KafkaConnectDB --> DistributedDatabase
+
+DistributedDatabase  ..> CockroachDB
+
+DistributedDatabase  ..> MongoDB
+
+DistributedDatabase ..> Cassandra
+
+DistributedDatabase ..> CosmosDB
+
+KafkaConnectParquet --> Parquet
+
+RestoreKafkaStream ..> KafkaStream
+
+RestoreKafkaStream ..> Parquet
+
+DistributedDatabase <-- WebAPI
+
+WebAPI <-- AndroidApp
+
+Users -up-> AndroidApp
+
+@enduml

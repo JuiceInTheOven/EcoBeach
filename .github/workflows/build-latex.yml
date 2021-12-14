@@ -1,6 +1,14 @@
 name: Build LaTeX report
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - "report/**"
+      - ".github/workflows/build-latex.yml"
+  pull_request:
+    paths:
+      - "report/**"
+      - ".github/workflows/build-latex.yml"
 
 jobs:
   build-latex:
@@ -14,7 +22,7 @@ jobs:
         root_file: main.tex
         args: -pdf -file-line-error -interaction=nonstopmode -shell-escape
     - name: Upload pdf to GitHub Workflow
-      uses: actions/upload-artifact@v2.2.4
+      uses: actions/upload-artifact@v2.3.0
       with:
         name: report
         path: report/main.pdf

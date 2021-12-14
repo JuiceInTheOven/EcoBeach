@@ -19,6 +19,33 @@ If you need help with LaTeX let me (Nikolai) or Niels know.
 
 ## Services/Applications
 
+### SentinelSatDownloader
+
+A service capable of downloading images from the Sentinel Sattelite given a position and a timeframe.
+
 ### WebApi
 
 The WebApi project is a simple .NET-6.0 backend project with an API to communicate to our Kafka and Hadoop processing pipeline. Swagger is enabled by default.
+
+### Local run
+
+1. Run docker-compose files in .docker
+
+Kowl (localhost:8088)
+
+Spark (localhost:8080)
+
+### Docker Swarm
+
+- Hadoop
+- Kafka
+
+Kafka Servers:
+
+- helsinki.faurskov.dev:9092 (Most likely the master)
+- nuremberg.faurskov.dev:9092
+- falkenstein.faurskov.dev:9092
+
+Dev services:
+
+- <http://135.181.80.186:8080/brokers> (Kowl webui)
