@@ -17,14 +17,14 @@ EcoBeach consists of services that each play a crucial role in monitoring shorel
         \hline
         \textbf{Service name}      & \textbf{Service description}                                                                                                              \\ \hline
         Sentinel Satellite Scraper & A python script that downloads and pre-processes satellite imagery                                                                        \\\hline
-        NDWI Analyzer              & A Spark job that analyzes pre-processed satellite images for shoreline changes.                                        \\\hline
+        NDWI Analyzer              & A Spark job that analyzes pre-processed satellite images for shoreline changes.                                                           \\\hline
         Kafka                      & A distributed event streaming service, where intermediary data is saved as part of the processing pipeline.                               \\\hline
         Spark                      & A large-scale data analytics framework that supports publishing jobs that are processed on distributed Spark Workers.                     \\\hline
         Hadoop                     & A framework that allows distributed file storage primarily with HDFS. Used for saving checkpoints and the pre-processed satellite images. \\\hline
         Zookeeper                  & A centralized service to enable reliable distributed coordination for Hadoop and Kafka.                                                   \\\hline
-        MongoDB                    & A distributed database to save and query fully processed data.                                                                           \\\hline
+        MongoDB                    & A distributed database to save and query fully processed data.                                                                            \\\hline
         MongoDB Kafka Connector    & A sink connector for Kafka to feed fully processed data from Kafka to MongoDB                                                             \\\hline
-        Kowl                       & An intuitive monitoring service that allows viewing and configuring running Kafka services.                                           \\\hline
+        Kowl                       & An intuitive monitoring service that allows viewing and configuring running Kafka services.                                               \\\hline
         WebAPI                     & A .NET WebAPI to provide a nice interface for querying data from MongoDB                                                                  \\\hline
         Android Application        & The EcoBeach app where fully processed data is represented with the google maps interface.                                                \\\hline
     \end{tabular}
