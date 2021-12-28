@@ -1,0 +1,17 @@
+services:
+  kowl:
+    image: quay.io/cloudhut/kowl:master
+    ports:
+      - 8088:8080
+    environment:
+      KAFKA_BROKERS: kafka:9092
+    restart: always
+    networks:
+      cscourse:
+
+networks:
+  cscourse:
+    name: hadoop
+    ipam:
+      config:
+        - subnet: 172.202.0.0/24

@@ -27,6 +27,14 @@ A service capable of downloading images from the Sentinel Sattelite given a posi
 
 The WebApi project is a simple .NET-6.0 backend project with an API to communicate to our Kafka and Hadoop processing pipeline. Swagger is enabled by default.
 
+### Local run
+
+1. Run docker-compose files in .docker
+
+Kowl (localhost:8088)
+
+Spark (localhost:8080)
+
 ### Docker Swarm
 
 - Hadoop

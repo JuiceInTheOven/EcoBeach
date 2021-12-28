@@ -1,0 +1,15 @@
+services:
+  analyzer:
+    image: nikolaidamm/ndwi-analyzer:latest
+    container_name: analyzer
+    environment:
+      - SPARK_APPLICATION_ARGS=--kafka_servers kafka:9092
+    networks:
+      cscourse:
+
+networks:
+  cscourse:
+    name: hadoop
+    ipam:
+      config:
+        - subnet: 172.202.0.0/24

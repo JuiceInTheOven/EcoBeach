@@ -28,7 +28,7 @@ namespace WebApi.DataAccess.Services
             _beaches.Find(beach => true).ToList();
 
         public Beach Get(string id) =>
-            _beaches.Find<Beach>(beach => beach.Id == id).FirstOrDefault();
+            _beaches.Find<Beach>(beach => beach._id == id).FirstOrDefault();
 
         public Beach Create(Beach beach)
         {
@@ -37,12 +37,12 @@ namespace WebApi.DataAccess.Services
         }
 
         public void Update(string id, Beach beachIn) =>
-            _beaches.ReplaceOne(beach => beach.Id == id, beachIn);
+            _beaches.ReplaceOne(beach => beach._id == id, beachIn);
 
         public void Remove(Beach beachIn) =>
-            _beaches.DeleteOne(beach => beach.Id == beachIn.Id);
+            _beaches.DeleteOne(beach => beach._id == beachIn._id);
 
         public void Remove(string id) =>
-            _beaches.DeleteOne(beach => beach.Id == id);
+            _beaches.DeleteOne(beach => beach._id == id);
     }
 }
