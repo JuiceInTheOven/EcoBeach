@@ -34,46 +34,7 @@ namespace WebApi.Logic.Helpers
 
                     data.Add(new Beach
                     {
-                        CountryCode = line[0],
-                        BathingWaterIdentifier = line[1],
-                        GroupIdentifier = line[2],
-                        Name = line[3],
-                        ZoneType = line[4],
-                        GeographicalConstraint = Boolean.Parse(line[5]),
-                        Longitude = longitude,
-                        Latitude = latitude,
-                        ProfileURL = line[8],
-                        Quality90 = line[9],
-                        Quality91 = line[10],
-                        Quality92 = line[11],
-                        Quality93 = line[12],
-                        Quality94 = line[13],
-                        Quality95 = line[14],
-                        Quality96 = line[15],
-                        Quality97 = line[16],
-                        Quality98 = line[17],
-                        Quality99 = line[18],
-                        Quality00 = line[19],
-                        Quality01 = line[20],
-                        Quality02 = line[21],
-                        Quality03 = line[22],
-                        Quality04 = line[23],
-                        Quality05 = line[24],
-                        Quality06 = line[25],
-                        Quality07 = line[26],
-                        Quality08 = line[27],
-                        Quality09 = line[28],
-                        Quality10 = line[29],
-                        Quality11 = line[30],
-                        Quality12 = line[31],
-                        Quality13 = line[32],
-                        Quality14 = line[33],
-                        Quality15 = line[34],
-                        Quality16 = line[35],
-                        Quality17 = line[36],
-                        Quality18 = line[37],
-                        Quality19 = line[40],
-                        Quality20 = line[43]
+                        
                     });
                 }
             }
