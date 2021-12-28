@@ -43,7 +43,7 @@ The services in EcoBeach were chosen or created to provide solutions to the sub-
 
 \paragraph{How to build a system capable of real-time processing?} The main contributor to this is Kafka and Spark. Kafka allows us to create topics with intermediary data, where our NDWI Analyzer Spark Job is set up as a consumer that processes new entries as they are created. Together with the rest of the stack, it allows us to create, process, and feed data to MongoDB quickly and reliably as new data is entering the system.
 
-\paragraph{How to build a highly resilient system?} To make EcoBeach a resilient system, we identified single-points of failure and added load-balancing and distribution of services to ensure that the system would function reliably in case of failures. Docker Swarm as the chosen container orchestration tool was a massive help in configuring this. This is described in more detail in \autoref{subsec:the-infrastructure} and \autoref{subsec:hosting-setup}.
+\paragraph{How to build a highly resilient system?} To make EcoBeach a resilient system, we identified single-points of failure and added load-balancing and distribution of services to ensure that the system would function reliably in case of failures. Docker Swarm as the chosen container orchestration tool was a massive help in configuring this. This is described in more detail in \autoref{subsec:the-infrastructure}.
 
 \paragraph{How to build a mobile application that uses mobile sensing in a meaningful way to visualize shoreline changes?} To make the EcoBeach app utilize mobile sensing, we made the app rely on the user's current location and provide data accordingly. As the EcoBeach app is an Android application, the Google Maps API is what the app relies on to provide most of its features. The EcoBeach app is described in detail in \autoref{subsec:ecobeach-app}
 
@@ -59,16 +59,6 @@ The services in EcoBeach were chosen or created to provide solutions to the sub-
 \section{Solution Description}
 
 In this section, an in-depth description of the solution is presented.  First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, process, and visualize data in EcoBeach are presented.
-
-\subsection{Hosting Setup} \label{subsec:hosting-setup}
-
-- Containerization and Container Orchestration
-- Server setup
-- How many nodes?
-- Resources?
-- Resource allocation
-- Security
-- etc...
 
 \subsection{HDFS, Kafka, Spark and MongoDb} \label{subsec:the-stack}
 
