@@ -1,52 +1,78 @@
 package com.example.androidproject.models
 
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import android.content.Context
+import com.example.androidproject.activities.MainActivity
+import okhttp3.OkHttpClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import okhttp3.logging.HttpLoggingInterceptor
 
-class ApiHandler{
-    val url = "http://numbersapi.com/random/year?json"
+class ApiHandler (context: Context) {
+    private var _context: Context = context
+    private val url = "http://135.181.80.186:8085/"
 
-    fun getDatas() : List<Beach>{
-        val mapper = jacksonObjectMapper()
+    fun getBeachesOnMap(){
+        val logging = HttpLoggingInterceptor()
+        logging.level = HttpLoggingInterceptor.Level.BODY
 
-        //beaches.add(Beach("Kerteminde Nordstrand", 55.4578631605276, 10.66580564769334, 0.0))
-        //beaches.add(Beach("Hasmark Strand", 55.559144842780235, 10.466831402854728, 0.0))
+        val client = OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .build()
 
-        //val json = getJson()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(url)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
+            .build()
 
-        val json = """[ {
-                      "name" : "Kerteminde Nordstrand",
-                      "lat" : "55.4578631605276",
-                      "lng" : "10.66580564769334"
-                    }, {
-                      "name" : "Hasmark Strand",
-                      "lat" : "55.559144842780235",
-                      "lng" : "10.466831402854728"
-                    } ]"""
+        val apiService: ApiEndpoints = retrofit.create(ApiEndpoints::class.java)
 
-        val beaches: List<Beach> = mapper.readValue(json)
+        var allBeaches : MutableList<BeachModel> = mutableListOf<BeachModel>()
 
-        return beaches
-    }
+        val call: Call<List<BeachModel>> = apiService.getBeaches()
+        call.enqueue(object : Callback<List<BeachModel>> {
+            override fun onResponse(call: Call<List<BeachModel>>, response: Response<List<BeachModel>>){
+//                response.body()?.forEach { beach ->
+//                    if((response.body() as List<BeachModel>).filter { it.locationName == beach.locationName}.count() == 1)
+//                    {
+//                        allBeaches.add(beach)
+//                    }
 
-    private fun getJson() : String{
-        var json : String = ""
-
-        val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.GET, url, null,
-            { response ->
-                //textView.text = "Response: %s".format(response.toString())
-                json = response.toString()
-            },
-            { _ -> //error
-                // TODO: Handle error
-                json = ""
+//                    var exists : Boolean = false
+//                    allBeaches.forEach { abeach ->
+//                        if(beach.locationName == abeach.locationName)
+//                        {
+//                            exists = true
+//                        }
+//
+//                        if(!exists)
+//                        {
+//                            allBeaches.add(beach)
+//                        }
+//                    }
+//                    if(allBeaches?.filter{ it.locationName == beach.locationName }?.count() == 0){
+//                        allBeaches.add(beach)
+//                    }
+                //}
+                //
+                (_context as MainActivity).addBeachesToMap(response.body())
             }
-        )
 
-        return json
+            override fun onFailure(call: Call<List<BeachModel>>, t: Throwable?) {
+                // Log error here since request failed
+            }
+        })
     }
+}
+
+interface ApiEndpoints{
+
+    @GET("api/beach")
+    fun getBeaches(): Call<List<BeachModel>>
+    @GET("api/beach/61cb6485f505f83a5677d142")
+    fun getBeach(): Call<BeachModel>
 }

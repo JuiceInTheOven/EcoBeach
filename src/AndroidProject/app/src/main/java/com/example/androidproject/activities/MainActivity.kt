@@ -9,8 +9,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.androidproject.R
 import com.example.androidproject.databinding.ActivityMainBinding
-import com.example.androidproject.models.Beach
-import com.example.androidproject.models.CustomMarker
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -18,15 +16,16 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import android.content.Intent
 import android.location.LocationManager
-import android.content.DialogInterface
 import android.provider.Settings
 import android.app.AlertDialog.Builder
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import com.example.androidproject.models.ApiHandler
 import com.google.android.gms.location.*
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
+import com.example.androidproject.models.*
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -39,6 +38,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val policy = ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -55,7 +57,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             val builder = Builder(this)
             builder
                 .setTitle("There's no Internet connection")
-                .setMessage("For a better experience, turn on Internet connection. If you pick OK, the application will be closed. " +
+                .setMessage("For using the app, turn on Internet connection. If you pick OK, the application will be closed. " +
                         "Please restart the app after you have turned on the internet.")
                 .setPositiveButton("OK") { _, _ -> finish() }
                 .setNegativeButton("No thanks") { _, _ ->  }
@@ -119,7 +121,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             val builder = Builder(this)
             builder
                 .setTitle("GPS is not enabled")
-                .setMessage("For a better experience, turn on device location")
+                .setMessage("For using the app, turn on device location")
                 .setPositiveButton("OK") { _, _ ->
                     val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                     startActivity(intent)
@@ -142,8 +144,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-
-        addBeachesToMap()
+        val apiHandler = ApiHandler(this)
+        apiHandler.getBeachesOnMap()
+        //addBeachesToMap()
         mMap.setInfoWindowAdapter(CustomMarker(this))
 
         //move the camera to the user's location
@@ -152,36 +155,31 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.setOnInfoWindowClickListener { marker ->
             if(marker.title != "You are here :)"){
                 val intent = Intent(this, BeachActivity::class.java).apply {
-                    val info = marker.snippet.split(',')
+                    val info = marker.snippet.split('#')
 
-                    putExtra("name", info[0])
-                    putExtra("lat", info[1])
-                    putExtra("lng", info[2])
-                    putExtra("change", info[3])
+                    val geoLocation = GeoPosition()
+                    geoLocation.lat = info[1].toDouble()
+                    geoLocation.lon = info[2].toDouble()
+                    val beach = BeachModel(info[3],info[0],geoLocation,info[4],info[5].toInt(),
+                        info[6].toDouble(),info[7].toInt(),info[8].toDouble(),info[9],null )
+
+                    putExtra("beach", beach)
                 }
                 startActivity(intent)
             }
         }
     }
 
-    private fun addBeachesToMap() {
+    fun addBeachesToMap(beaches : List<BeachModel>?) {
         // Add a marker to the user's location
         mMap.addMarker(
             MarkerOptions().position(userLocation).title("You are here :)")
                 .snippet(",${userLocation.latitude},${userLocation.longitude},")
         )
 
-//        val beaches = mutableListOf<Beach>()
-//        beaches.add(Beach("Kerteminde Nordstrand", 55.4578631605276, 10.66580564769334, 0.0))
-//        beaches.add(Beach("Hasmark Strand", 55.559144842780235, 10.466831402854728, 0.0))
-//        beaches.add(Beach("Nordenhuse Strand", 55.37738690518388, 10.771233901499762, 0.0))
-
-        val apiHandler = ApiHandler()
-        val beaches = apiHandler.getDatas()
-
-        beaches.forEach { beach ->
+        beaches?.forEach { beach ->
             mMap.addMarker(
-                MarkerOptions().position(LatLng(beach.Lat, beach.Lng)).title(beach.Name).icon(
+                MarkerOptions().position(LatLng(beach.geoPosition?.lat!!, beach.geoPosition?.lon!!)).title(beach.locationName).icon(
                     BitmapDescriptorFactory.defaultMarker(green)
                 ).snippet(beach.toString())
             )
