@@ -174,7 +174,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         // Add a marker to the user's location
         mMap.addMarker(
             MarkerOptions().position(userLocation).title("You are here :)")
-                .snippet(",${userLocation.latitude},${userLocation.longitude},")
+                .snippet("#${userLocation.latitude}#${userLocation.longitude}#")
         )
 
         beaches?.forEach { beach ->

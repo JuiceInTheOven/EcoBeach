@@ -36,29 +36,6 @@ class ApiHandler (context: Context) {
         val call: Call<List<BeachModel>> = apiService.getBeaches()
         call.enqueue(object : Callback<List<BeachModel>> {
             override fun onResponse(call: Call<List<BeachModel>>, response: Response<List<BeachModel>>){
-//                response.body()?.forEach { beach ->
-//                    if((response.body() as List<BeachModel>).filter { it.locationName == beach.locationName}.count() == 1)
-//                    {
-//                        allBeaches.add(beach)
-//                    }
-
-//                    var exists : Boolean = false
-//                    allBeaches.forEach { abeach ->
-//                        if(beach.locationName == abeach.locationName)
-//                        {
-//                            exists = true
-//                        }
-//
-//                        if(!exists)
-//                        {
-//                            allBeaches.add(beach)
-//                        }
-//                    }
-//                    if(allBeaches?.filter{ it.locationName == beach.locationName }?.count() == 0){
-//                        allBeaches.add(beach)
-//                    }
-                //}
-                //
                 (_context as MainActivity).addBeachesToMap(response.body())
             }
 
