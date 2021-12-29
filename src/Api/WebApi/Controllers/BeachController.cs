@@ -42,7 +42,7 @@ namespace WebApi.Controllers
         {
             service.Create(beach);
 
-            return CreatedAtRoute("GetBook", new { id = beach.Id.ToString() }, beach);
+            return CreatedAtRoute("GetBook", new { id = beach._id.ToString() }, beach);
         }
 
         [HttpPut("{id:length(24)}")]
@@ -70,7 +70,7 @@ namespace WebApi.Controllers
                 return NotFound();
             }
 
-            service.Remove(beach.Id);
+            service.Remove(beach._id);
 
             return NoContent();
         }
