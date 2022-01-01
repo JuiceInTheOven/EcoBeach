@@ -9,7 +9,7 @@ Lastly, the advantages and disadvantages of EcoBeach will be presented.
 
 \section{Solution Approach}\label{sec:solution-approach}
 
-EcoBeach consists of services that each play a crucial role in monitoring shorelines. There is a total of 11\todo{just correct this if I am wrong} services as shown in \autoref{tab:ecobeach-services}.
+EcoBeach consists of services and applications that play a crucial role in monitoring shorelines. There is a total of 11 services/applications as shown in \autoref{tab:ecobeach-services}.
 
 \begin{table}[]
     \centering
@@ -28,7 +28,7 @@ EcoBeach consists of services that each play a crucial role in monitoring shorel
         WebAPI                     & A .NET WebAPI to provide a nice interface for querying data from MongoDB                                                                  \\\hline
         Android Application        & The EcoBeach app where fully processed data is represented with the google maps interface.                                                \\\hline
     \end{tabular}
-    \caption{The services that in EcoBeach}
+    \caption{The services/applications in the EcoBeach system}
     \label{tab:ecobeach-services}
 \end{table}
 
@@ -37,9 +37,9 @@ The services in EcoBeach were chosen or created to provide solutions to the sub-
 
 \paragraph{How to download satellite images from Copernicus?} To download satellite images, we created a resilient scraping service that continuously downloads and pre-processes satellite images on given geo-locations. The scraping service is described in detail in \autoref{subsec:sentinel-satellite-scraper}.
 
-\paragraph{How to process images, so water is differentiated from land?} For this purpose, we pre-process images during the scraping process, so they are saved as black and white images according to their \acrfull{ndwi} value. Then we created the NDWI Analyzer, a Spark Job, that analyzes downloaded satellite images and counts the number of white versus black pixels to determine what is water or land. The NDWI Analyzer is described in \autoref{subsec:ndwi-analyzer}.
+\paragraph{How to process images so water is differentiated from land?} For this purpose, we pre-process images during the scraping process, so they are saved as black and white images according to their \acrfull{ndwi} value. Then we created the NDWI Analyzer, a Spark Job, that analyzes downloaded satellite images to determine what is water or land. The NDWI Analyzer is described in \autoref{subsec:ndwi-analyzer}.
 
-\paragraph{How to build a system capable of handling huge amounts of data?} To create a system capable of large-scale data processing and analysis, we created a stack that relies on distributed systems that are very scalable and fault-tolerant. The stack includes Kafka, Spark, Hadoop, Zookeeper, and MongoDB and is described in \autoref{subsec:the-stack}
+\paragraph{How to build a system capable of handling big data?} To create a system capable of large-scale data processing and analysis, we created a stack that relies on distributed systems that are very scalable and fault-tolerant. The stack includes Kafka, Spark, Hadoop, Zookeeper, and MongoDB and is described in \autoref{subsec:the-stack}
 
 \paragraph{How to build a system capable of real-time processing?} The main contributor to this is Kafka and Spark. Kafka allows us to create topics with intermediary data, where our NDWI Analyzer Spark Job is set up as a consumer that processes new entries as they are created. Together with the rest of the stack, it allows us to create, process, and feed data to MongoDB quickly and reliably as new data is entering the system.
 
@@ -58,7 +58,7 @@ The services in EcoBeach were chosen or created to provide solutions to the sub-
 
 \section{Solution Description}
 
-In this section, an in-depth description of the solution is presented.  First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, process, and visualize data in EcoBeach are presented.
+In this section, an in-depth description of the solution is presented. First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, process, and visualize data in EcoBeach are presented.
 
 \subsection{HDFS, Kafka, Spark and MongoDb} \label{subsec:the-stack}
 
@@ -98,13 +98,14 @@ The Sentinel-2 satellite has two types of products available for download. The t
         Level-1C              & Top-of-atmosphere               & 600MB — 100x100 km2  \\\hline
         Level-2A              & Bottom-of-atmosphere            & 800MB — 100x100 km2  \\\hline
     \end{tabular}
-    \caption{Adapted from https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2/data-products}
+    \caption{Adapted from \href{https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2/data-products}{Sentinel-2 data products}}
     \label{tab:sentinel-2-product-types}
 \end{table}
 
 EcoBeach relies on Level-2A products, as these are ground images and not atmospheric images. The Level-2A products can be downloaded in 3 different spatial resolutions, 10m, 20m, 60m, all as tiles covering 100x100 $km^2$. The spatial resolution defines how many cubic meters each pixel covers and what spectral bands are available. Naturally, the lower the spatial resolution is, the more detailed the product is. However, it also increases its size to $\sim 1GB$ per product at 10m spatial resolution. \\
 
-As previously mentioned, each spatial resolution contains different spectral bands. The 10m spectral resolution is the one the \acrshort{sss} uses, and it includes four spectral bands: band 2, band 3, band 4, and band 8, which defines the different wavelengths the Sentinel-2 Satellite can capture. The specifications of these bands can be seen in \autoref{tab:sentinel-2-10m-bands}
+As previously mentioned, each spatial resolution contains different spectral bands. The 10m spectral resolution is the one the \acrshort{sss} uses, and it includes four spectral bands: band 2, band 3, band 4, and band 8, which defines the different wavelengths the Sentinel-2 Satellite can capture. The specifications of these bands can be seen in \autoref{tab:sentinel-2-10m-bands}.
+\cite{sentinel-2-product-specification}
 
 \begin{table}[h!]
     \centering
@@ -116,7 +117,7 @@ As previously mentioned, each spatial resolution contains different spectral ban
         B4            & 664.5 nm                    & Red                              \\ \hline
         B8            & 836.1 nm                    & Visible and Near Infrared (VNIR) \\ \hline
     \end{tabular}
-    \caption{Adapted from https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2/data-products}
+    \caption{Adapted from \href{https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2/data-products}{Sentinel-2 data products}}
     \label{tab:sentinel-2-10m-bands}
 \end{table}
 
@@ -131,15 +132,17 @@ As previously mentioned, each spatial resolution contains different spectral ban
     \label{fig:sentinel-satellite-scraper-scrape}
 \end{figure}
 
-The scraping method first instantiates the \emph{Sentinel2Loader} from the \emph{sentinelloader} library with the folder to download products too, the Copernicus user, the desired cloud coverage percentage, and the log level. After this, the locations to scrape for are read in from one of many excel files located in the scrapers directory. Each of these Excel files contains geo-locations on beaches in a specific country. After this, the main scraping loop begins, where it randomly selects a non-processed beach and proceeds. Randomly selecting a beach is a deliberate choice as the Copernicus API restricts the number of offline products that can be downloaded to 20 each day. Mixing up which locations we query historical data from ensures we use the offline product retrievals differently each time the script is run. Thus, we get historical data for different areas over time.
+The scraping method first instantiates the \emph{Sentinel2Loader} from the \emph{sentinelloader} library with the folder to download products too, the Copernicus user, the desired cloud coverage percentage, and the log level. After initialisation the locations to scrape for are read in from one of many excel files located in the scrapers directory. Each of these Excel files contains geo-locations on beaches in a specific country and come from a publicly available dataset from the European Environmental Agency \cite{bathing_dateset}. 
+
+When the Excel data has been read to memory, the main scraping loop begins, where it randomly selects a non-processed beach and proceeds. Randomly selecting a beach is a deliberate choice as the Copernicus API restricts the number of offline products that can be downloaded to 20 each day. Mixing up which locations we query historical data from ensures we use the offline product retrievals differently each time the script is run. Thus, we improve the chances of getting historical data for different areas over time.
 
 Next, the different needed parameters are extracted from the excel data, and the process of downloading products, combining bands, and cropping the resulting images is started by the \emph{getRegionHistory(...)} method call. This call is called with the country code, the location name, a search area that defines the boundary of the location of interest, the index we want to combine bands, the spatial resolution, the from date, and lastly, the to date.
 
-As indicated by the ``NDWI\_MacFeeters`` parameter, the combination of bands happens accordingly to the \acrfull{ndwi}. The MacFeeters formula for \acrshort{ndwi} combines the bands into an image that differentiates water from land. The \acrshort{ndwi} uses a simple formula to combine band 3 and band 8 to give a value between 0 and 1 for each pixel that indicates how likely that pixel is to be either water or land.
+As indicated by the ``NDWI\_MacFeeters`` parameter, the combination of bands happens accordingly to the \acrfull{ndwi} \cite{ndwi}. The MacFeeters formula for \acrshort{ndwi} combines the bands into an image that differentiates water from land. The \acrshort{ndwi} uses a simple formula to combine band 3 and band 8 to give a value between 0 and 1 for each pixel that indicates how likely that pixel is to be either water or land. \cite{sentinel-2-bands-combinations}
 
 \[ NDWI = \dfrac{B3 - B8}{B3 + B8} \]
 
-Furthermore, the cropping of the image relies on the provided searcg area that defines the boundaries of the location of interest. \emph{Sentinelloader} automatically crops out the area of interest from the downloaded product(s). In cases where the place of interest covers multiple products, the \emph{sentinelloader} library can download, combine and crop the image from various products, so no data is lost.
+Furthermore, the cropping of the image relies on the provided search area that defines the boundaries of the location of interest. \emph{Sentinelloader} automatically crops out the area of interest from the downloaded product(s). In cases where the place of interest covers multiple products, the \emph{sentinelloader} library can download, combine and crop the image from various products, so no data is lost.
 
 After having downloaded products, combined bands, and cropped the resulting image, custom pre-processing is done on the resulting image to color it based on the \acrshort{ndwi} values and to ensure the image size is as compact as possible. This work happens in the \emph{processGeoTiffImages(...)}.
 
@@ -162,24 +165,18 @@ First, the desired image name and path of the pre-processed images are construct
 
 Finally, the image and relevant metadata are compressed to JSON and published to Kafka. After this, all downloaded satellite imagery is deleted to clear up valuable space for processing the following location. If this cleanup process is skipped, the downloaded products would quickly fill up the remaining disk space on the machines where the script is run.
 
-%https://sentinel.esa.int/documents/247904/685211/Sentinel-2-Products-Specification-Document
-
-%https://gisgeography.com/sentinel-2-bands-combinations/
-
-%https://en.wikipedia.org/wiki/Normalized_difference_water_index
-
 \subsection{NDWI Analyzer}\label{subsec:ndwi-analyzer}
 
-The NDWI Analyzer is a python spark job created with the purpose of continuously consuming and analyze messages from Kafka to provide insight into what the scraped satellite images can tell us about the water content changes. EcoBeach relies on distributed Spark workers to handle this job, to efficiently analyze newly scraped satellite images, and feed the results back to Kafka.\\\\
+The NDWI Analyzer is a python spark job created to continuously consume and analyze messages from Kafka to provide insight into what the scraped satellite images can tell us about the water content changes. EcoBeach relies on distributed Spark workers to handle this job, to efficiently analyze newly scraped satellite images, and feed the results back to Kafka.\\\\
 \noindent
-The NDWI Analyzer runs constantly and watches for changes to the Kafka topic ``ndwi\_images``. Whenever a new message is added to the topic, the NDWI Analyzer consumes this message, analyzes it, and produces a new message to the ``ndwi\_results`` topic that holds all data that the data pipeline has fully processed and is ready to be transferrred into MongoDB.\\\\
+The NDWI Analyzer runs constantly and watches for changes to the Kafka topic ``ndwi\_images``. Whenever a new message is added to the topic, the NDWI Analyzer consumes this message, analyzes it, and produces a new message to the ``ndwi\_results`` topic that holds all data that the data pipeline has fully processed.\\\\
 \noindent
-The analysis is a three step process. First the black and white images in \autoref{fig:sentinel-satellite-scraper-processed-image} that are created by the \acrshort{sss} are recreated. The images are stored in the Kafka message that contains the image encrypted as byte64. Then all white and black pixels are counted in the image, and lastly the percentage and area of both white and black pixels is calculated. The relevant code is shown in \autoref{fig:ndwi-analyzer-code}.
+The analysis is a three-step process. First the black and white images in \autoref{fig:sentinel-satellite-scraper-processed-image} that are created by the \acrshort{sss} are recreated. The images are stored in the Kafka message that contains the image encrypted as byte64. Then all white and black pixels are counted in the image, and lastly, the percentage and area (in cubic meters) of both white (water) and black (land) pixels are calculated. The relevant code is shown in \autoref{fig:ndwi-analyzer-code}.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{ndwi-analyzer-code.png}
-    \caption{The code that recreates the black-and-white images, counts pixels and calculates percentage and area of water and land.}
+    \caption{The code that recreates the black-and-white images, counts pixels and calculates percentage and area (in cubic meters) of water and land.}
     \label{fig:ndwi-analyzer-code}
 \end{figure}
 
