@@ -4,5 +4,8 @@
     <string name="lat_text">Lat: %1$s</string>
     <string name="lng_text">Lng: %1$s</string>
     <string name="beach_name_text">Beach name</string>
-    <string name="changes_text">Changes</string>
+    <string name="percentage_text">Percentage</string>
+    <string name="date_text">Date: %1$s</string>
+    <string name="land_text">Land: %1$s%%</string>
+    <string name="water_text">Water: %1$s%%</string>
 </resources>

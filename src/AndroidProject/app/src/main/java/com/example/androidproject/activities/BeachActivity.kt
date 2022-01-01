@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import com.example.androidproject.R
-import com.example.androidproject.models.Beach
+import com.example.androidproject.models.BeachModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
@@ -13,7 +13,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 
 class BeachActivity : AppCompatActivity(), OnMapReadyCallback {
-    private lateinit var beach: Beach
+    private lateinit var beach: BeachModel
     private lateinit var mapView: MapView
     private lateinit var gMap: GoogleMap
     private val mapViewBundleKey : String = "MapViewBundleKey"
@@ -22,19 +22,22 @@ class BeachActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_beach)
 
-        beach = Beach(
-            intent.extras?.get("name").toString(),
-            intent.extras?.get("lat").toString().toDouble(),
-            intent.extras?.get("lng").toString().toDouble(),
-            intent.extras?.get("change").toString().toDouble()
-        )
+        beach = intent.extras?.getSerializable("beach") as BeachModel
 
-        this.findViewById<TextView>(R.id.beach_title).text = beach.Name
-        val latRounded = "%.2f".format(beach.Lat).toDouble()
-        val lngRounded = "%.2f".format(beach.Lng).toDouble()
+        this.findViewById<TextView>(R.id.beach_title).text = beach.locationName
+        val latRounded = "%.2f".format(beach.geoPosition!!.lat).toDouble()
+        val lngRounded = "%.2f".format(beach.geoPosition!!.lon).toDouble()
+
+        val landP = beach.landPercentage!!.times(100)
+        val waterP = beach.waterPercentage!!.times(100)
+        val landPercentageRounded = "%.2f".format(landP).toDouble()
+        val waterPercentageRounded = "%.2f".format(waterP).toDouble()
 
         this.findViewById<TextView>(R.id.beach_lat).text = resources.getString(R.string.lat_text, latRounded.toString())
         this.findViewById<TextView>(R.id.beach_lng).text = resources.getString(R.string.lng_text, lngRounded.toString())
+        this.findViewById<TextView>(R.id.date).text = resources.getString(R.string.date_text, beach.date)
+        this.findViewById<TextView>(R.id.land).text = resources.getString(R.string.land_text, landPercentageRounded.toString())
+        this.findViewById<TextView>(R.id.water).text = resources.getString(R.string.water_text, waterPercentageRounded.toString())
 
         this.findViewById<Button>(R.id.close_beach_btn).setOnClickListener{
             this.finish()
@@ -95,7 +98,7 @@ class BeachActivity : AppCompatActivity(), OnMapReadyCallback {
         gMap = googleMap
         gMap.setMinZoomPreference(14f)
         gMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
-        val ny = LatLng(beach.Lat, beach.Lng)
+        val ny = LatLng(beach.geoPosition!!.lat!!.toDouble(), beach.geoPosition!!.lon!!.toDouble())
         gMap.moveCamera(CameraUpdateFactory.newLatLng(ny))
     }
 }

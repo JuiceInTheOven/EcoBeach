@@ -28,7 +28,7 @@ class CustomMarker (context: Context) : GoogleMap.InfoWindowAdapter {
         val lat = view.findViewById<TextView>(R.id.info_lat)
         val lng = view.findViewById<TextView>(R.id.info_lng)
 
-        val latLng = marker!!.snippet.split(',')
+        val latLng = marker!!.snippet.split('#')
 
         val latRounded = "%.2f".format(latLng[1].toDouble())
         val lngRounded = "%.2f".format(latLng[2].toDouble())
