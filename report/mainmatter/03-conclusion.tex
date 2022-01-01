@@ -1,4 +1,9 @@
 \chapter{Conclusion}
 
-\section*{Future work}
-- Future work
+We have designed and developed an application, called EcoBeach, which requests satellite imagery from the Sentinel2 satellite API and provides the user with the relevant information based on the analyzation of these images. The goal is to provide users a simple way to see how their environment changes in real time due to the effects of the climate change, and to raise awareness to this problem within the broader public. Once the images have been processed, the resulting data is displayed for the respective beaches in the application where users can view them as well as the image of the beach.
+
+Our backend services reside in a Docker Swarm cluster which requests the data from the Sentinel2 API. The cluster consists of three servers which simultaneously run a scraper which constantly receives data from the API. The scrapers publish their data to a specific Kafka topic and store it in Hadoop HDFS, for each node. Two of the three servers are in Germany, in Nuremberg and Falkenstein, and the third one is in Helsinki, Finland, which is the name node of our cluster. On the Helsinki node, Apache Spark master is also running, distributing analyzing jobs on the beach images. 
+
+Once the data has been analyzed, it is fed to another Kafka topic which has the Kafka Connect Sink connected that save the data to the MongoDB database. The database is hosted on two nodes as extra redundancy.
+
+Our frontend is an Android application which runs the Google Maps API to display a map the user can navigate. Once the application is loaded, it requests data from on one of the Web API endpoints which also resides in the cluster. The API then makes a data request to the database and maps the received data into one or more beach object. The API then sends the object in a Json format to the app which processes it and uses the geo location data to place each beach on the map.

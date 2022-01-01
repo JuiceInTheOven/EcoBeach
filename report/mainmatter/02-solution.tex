@@ -71,6 +71,14 @@ In this section, an in-depth description of the solution is presented.  First, t
 - Large-scale data analytics
 - Distributed Database
 
+\subsubsection{HDFS}
+
+\subsubsection{Kafka}
+
+\subsubsection{Spark}
+
+\subsubsection{MongoDb}
+
 \subsection{Sentinel Satellite Scraper}\label{subsec:sentinel-satellite-scraper}
 The \acrfull{sss} is a python script created to scrape and continuously download satellite imagery from given geo-locations. The script was created as EcoBeach relies on the analysis of geo-locations to determine how shorelines are changing. Because of this, it requires a steady input of data to reliable show how shorelines historically and currently have changed.\\\\
 \noindent
@@ -177,9 +185,88 @@ The analysis is a three step process. First the black and white images in \autor
 
 \subsection{WebAPI}
 
+Our system requires a Web API to handle the data flow between the Android application and the database. This is first and foremost done to increase security and prevent any direct access to the database from the application. In our case, our application only requests data from the API, it does not add or change any items in the database, so this is a one-way dataflow.
+
+The API accesses the MongoDB database via MongoDB Driver which is an ORM tool that we use to map data coming from the database to actual Beach objects which the API can handle, process and send as Json objects to endpoint-callers. 
+
+The API is deployed in a Docker container for easier testing and configurability. The database connection string can then be set in a system environment variable when launching the container. Once the container is running data can be requested on two endpoints.
+
+\subsubsection{/api/Beach}
+
+The application can call the API to request all the stored beach data from the database. This is first used when the application has to display the pins on the map, indicating the locations of all the beaches. The requested data is sent by the API in a JSON format, which is processed by the Android application into actual Beach objects.
+
+\subsubsection{/api/Beach/{id}}
+
+The application can also call an API request to get a single beach item from the database, based on the provided ID. This call is used when the user selects a beach in the application, and the detailed information is requested to display it for the user. 
+
+\subsubsection{Architecture}
+
+The backend services hosting the API is a multi-tier architecture system which breaks down into three main components:
+
+\begin{itemize}
+    \item Presentation Tier – in this system’s case, it contains the hosted API which can be called externally. It contains the controllers that handle all the API requests received.
+    \item Logic Tier – This tier mainly contains the models and helper classes. Models describe the type of object the ORM should map the data from the database. Also provides methods to read files with .csv extensions and use them to seed an empty database with beaches from the environmental agency’s dataset.
+    \item Data Tier – Provides services and context for the backend to reach the MongoDB database and queries it for data when needed. 
+\end{itemize}
+
+Introducing multiple tiers in our architecture allows us to have a very decoupled system in case a tier needs to be changed, or used in another system of similar kind. 
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=12cm]{api_architecture.png}
+    \caption{}
+    \label{fig:api_architecture}
+\end{figure}
+
 \subsection{EcoBeach App}\label{subsec:ecobeach-app}
 
+\subsubsection{Activities and layouts}
+
+The most important component of an application is the Activity, which is not only responsible for the user interface, but also for the operation of the application itself. During the implementation, three Activities have been created. These activities are the followings:
+
+\begin{itemize}
+    \item SplashScreenActivity - After starting the application this is the first thing that the user can see for two seconds. On the centre of the screen there is the logo of the application and below that, there is the name of the application. We used Constraint layout, which is one of the latest and most efficient layout types.
+    \item MainActivity - In this activity the user can see the Google Maps, with markers, that shows the different beaches in Europe. At first, it is going to focus on the user’s location.
+    \item BeachActvity - Here you can see more information about a specific beach and can see a satellite map focused on the location.
+\end{itemize}
+
+Each activity has their own layout, on the following pictures, you can see three screenshots of the different layouts.
 
 
+\begin{figure}[h!]
+    \centering
+    \fbox{\includegraphics[width=0.3\textwidth]{splash_activity.jpg}}
+    \fbox{\includegraphics[width=0.3\textwidth]{main_activity.jpg}}
+    \fbox{\includegraphics[width=0.3\textwidth]{beach_activity.jpg}}
+    \caption{Screenshots of SplashScreenActivity (left), MainActivity (center) and BeachActivity (right).}
+    \label{fig:activities}
+\end{figure}
 
+\subsubsection{Navigation}
+
+On \autoref{fig:navigation}, the navigation between the activities is shown. After starting the application, the users can see the SplashScreen Activity for two seconds, then they are navigated to the MainActivity, which shows them the marked Google Maps. Clicking on a marked place the user is navigated to the BeachActivity, where they can be informed about the beach, like the name of the beach, the coordinates, and about the shoreline changes.
+
+Having Internet and location enabled are very important, so in the MainActivity both are checked. If either the Internet or the location is not enabled, the user receives an alert, and the application is closed.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=8.5cm]{navigation.png}
+    \caption{Navigation between the Activities.}
+    \label{fig:navigation}
+\end{figure}
+
+\subsubsection{User permissions}
+
+Three permissions are needed to use this application. These permissions can be seen on \autoref{fig:user_permissions}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{user_permissions.png}
+    \caption{The user must grant these permissions in order to use the EcoBeach application.}
+    \label{fig:user_permissions}
+\end{figure}
+
+Location permissions are needed for getting the user’s location. If the user is not accepting it, then the application is closed automatically, since the app is based on having the location permission.
+
+Internet is needed for Google Maps, so that we can display different beaches on the map. Without this, we are unable to show the map in the MainActivity. However, the internet is not only used for Google Maps, but also for the Web API.
 
