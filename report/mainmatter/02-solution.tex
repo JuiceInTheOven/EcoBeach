@@ -61,23 +61,23 @@ The services in EcoBeach were chosen or created to provide solutions to the sub-
 In this section, an in-depth description of the solution is presented. First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, process, and visualize data in EcoBeach are presented.
 
 \subsection{HDFS, Kafka, Spark and MongoDb} \label{subsec:the-stack}
+When planning our project, distributed data storage and redundancy was one of the most important aspects we were looking to implement.
+Our cluster runs on multiple servers - or nodes - with one designated as master - or name node - to provide redundancy and reduce, or completely eliminite risk of data loss.
+Since the sheer size of the data that we request and analyze from the Sentinel2 API demands parallel processing, we also implemented the necessary tools to provide a seamless streaming of data.
 
-– Purpose (Why?)
-– Context (When?)
-– Description (How?)
-
-- Distributed File System
-- Distributed Event Streaming
-- Large-scale data analytics
-- Distributed Database
 
 \subsubsection{HDFS}
+When image scrapers are running on all the servers, they store their data in the Hadoop Distributed File System. Our HDFS consists of three servers, out of which our Helsinki server is the name node, and the two servers residing in germany are data nodes.
+The name node manages the filesystem meta-data, while the two data nodes store the actual data.
 
 \subsubsection{Kafka}
+Kafka is running on all servers and connects individual parts of our clusters via Kafka Connect streams. We used Kafka topics to differentiate between the origin of the data, whether it is the raw data coming from the NDWI scrapers or the analyzed images.
+Kafka provides us with the opportunity to stream our data within the cluster.
 
 \subsubsection{Spark}
-
+We use Apache Spark for our image analyzers which helps us process the data in batches via a continuous process stream. The data is consumed from Kafka continously and distributed Spark workers run a python job for image analyzation.
 \subsubsection{MongoDb}
+Our choice of distributed database is MongoDB which enables us to shard our data. MongoDB is running on two server instances for extra redundancy. As a document based NoSQL database, it stores its objects in Json format which also makes it easier to communicate data to the API.
 
 \subsection{Sentinel Satellite Scraper}\label{subsec:sentinel-satellite-scraper}
 The \acrfull{sss} is a python script created to scrape and continuously download satellite imagery from given geo-locations. The script was created as EcoBeach relies on the analysis of geo-locations to determine how shorelines are changing. Because of this, it requires a steady input of data to reliable show how shorelines historically and currently have changed.\\\\
@@ -184,7 +184,7 @@ The analysis is a three-step process. First the black and white images in \autor
 
 Our system requires a Web API to handle the data flow between the Android application and the database. This is first and foremost done to increase security and prevent any direct access to the database from the application. In our case, our application only requests data from the API, it does not add or change any items in the database, so this is a one-way dataflow.
 
-The API accesses the MongoDB database via MongoDB Driver which is an ORM tool that we use to map data coming from the database to actual Beach objects which the API can handle, process and send as Json objects to endpoint-callers. 
+The API accesses the MongoDB database via MongoDB Driver which is an Object–relational mapping (ORM) tool that we use to map data coming from the database to actual Beach objects which the API can handle, process and send as Json objects to endpoint-callers. 
 
 The API is deployed in a Docker container for easier testing and configurability. The database connection string can then be set in a system environment variable when launching the container. Once the container is running data can be requested on two endpoints.
 
@@ -211,7 +211,7 @@ Introducing multiple tiers in our architecture allows us to have a very decouple
 \begin{figure}[h!]
     \centering
     \includegraphics[width=12cm]{api_architecture.png}
-    \caption{}
+    \caption{WebAPI Multi-layer architecture}
     \label{fig:api_architecture}
 \end{figure}
 
