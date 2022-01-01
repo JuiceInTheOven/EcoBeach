@@ -98,7 +98,7 @@ The Sentinel-2 satellite has two types of products available for download. The t
         Level-1C              & Top-of-atmosphere               & 600MB — 100x100 km2  \\\hline
         Level-2A              & Bottom-of-atmosphere            & 800MB — 100x100 km2  \\\hline
     \end{tabular}
-    \caption{Adapted from \href{https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2/data-products}{Sentinel-2 data products}}
+    \caption{The different products available from the Sentinel-2 sattelite. Adapted from \href{https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2/data-products}{Sentinel-2 data products}}
     \label{tab:sentinel-2-product-types}
 \end{table}
 
@@ -117,7 +117,7 @@ As previously mentioned, each spatial resolution contains different spectral ban
         B4            & 664.5 nm                    & Red                              \\ \hline
         B8            & 836.1 nm                    & Visible and Near Infrared (VNIR) \\ \hline
     \end{tabular}
-    \caption{Adapted from \href{https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2/data-products}{Sentinel-2 data products}}
+    \caption{The four spectral bands included with the 10m spectral resolution. Adapted from \href{https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-2/data-products}{Sentinel-2 data products}}
     \label{tab:sentinel-2-10m-bands}
 \end{table}
 
@@ -173,7 +173,7 @@ The NDWI Analyzer runs constantly and watches for changes to the Kafka topic ``n
 \noindent
 The analysis is a three-step process. First the black and white images in \autoref{fig:sentinel-satellite-scraper-processed-image} that are created by the \acrshort{sss} are recreated. The images are stored in the Kafka message that contains the image encrypted as byte64. Then all white and black pixels are counted in the image, and lastly, the percentage and area (in cubic meters) of both white (water) and black (land) pixels are calculated. The relevant code is shown in \autoref{fig:ndwi-analyzer-code}.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{ndwi-analyzer-code.png}
     \caption{The code that recreates the black-and-white images, counts pixels and calculates percentage and area (in cubic meters) of water and land.}
