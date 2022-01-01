@@ -5,16 +5,6 @@
 \pagestyle{plain}
 
 \makeglossaries
-\defglsentryfmt{%
-	\ifglsused{\glslabel}{%
-		\glsgenentryfmt%
-	}{%
-		% Typeset first use
-		\textit{\glsgenentryfmt}%
-		\protect\footnote{%
-			\glsdesc{\glslabel}}%
-	}%
-}
 
 \hypersetup{
 	colorlinks=true,
