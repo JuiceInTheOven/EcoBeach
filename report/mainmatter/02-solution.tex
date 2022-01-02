@@ -124,7 +124,7 @@ The Kafka brokers are used by:
     \begin{itemize}
         \item Produces whenever an image matches the filter, metadata and grayscale are produced to the "ndwi\_images" topic.
     \end{itemize}
-    \item The Image Analyzer (Producer & Consumer): 
+    \item The Image Analyzer (Producer and Consumer): 
     \begin{itemize}
         \item Consumes on the "ndwi\_images" topic; thus, whenever an image is available, this service will analyze the image to better understand the amount of water to shore ratio within the area supplied in the image.
         \item Produces the resulting data set onto the "ndwi\_results" topic.
@@ -137,7 +137,7 @@ The Kafka brokers are used by:
 
 \subsubsection{Data storage}
 
-The database of choice was settled on MongoDB. MongoDB is great in a significant data context, as it scales incredibly well, with built-in tooling for redundancy and sharding, which is often lacking in many other DBMS solutions, or left to external plugins with added overhead. 
+The database of choice was settled on MongoDB. MongoDB is great in a big data context, as it scales incredibly well, with built-in tooling for redundancy and sharding, which is often lacking in many other DBMS solutions, or left to external plugins with added overhead. 
 Furthermore, MongoDB being document-oriented makes it straightforward to store data of different structures, as in the case of the data coming from our Kafka Connect connector. 
 MongoDB is also well supported within the developer community, making it possible to connect and communicate with the database in many different languages and frameworks. 
 
