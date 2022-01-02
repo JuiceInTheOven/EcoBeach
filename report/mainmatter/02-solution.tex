@@ -122,16 +122,16 @@ The Kafka brokers are used by:
 \begin{itemize}
     \item The NDWI Scraper (Producer): 
     \begin{itemize}
-        \item Produces whenever an image matches the filter, metadata and grayscale are produced to the "ndwi_images" topic.
+        \item Produces whenever an image matches the filter, metadata and grayscale are produced to the "ndwi\_images" topic.
     \end{itemize}
     \item The Image Analyzer (Producer & Consumer): 
     \begin{itemize}
-        \item Consumes on the "ndwi_images" topic; thus, whenever an image is available, this service will analyze the image to better understand the amount of water to shore ratio within the area supplied in the image.
-        \item Produces the resulting data set onto the "ndwi_results" topic.
+        \item Consumes on the "ndwi\_images" topic; thus, whenever an image is available, this service will analyze the image to better understand the amount of water to shore ratio within the area supplied in the image.
+        \item Produces the resulting data set onto the "ndwi\_results" topic.
     \end{itemize}
     \item MongoDB connector (Consumer):
     \begin{itemize}
-        \item Consumes items from the "ndwi_results" topic and copies the contents to the MongoDB database through Kafka Connect.
+        \item Consumes items from the "ndwi\_results" topic and copies the contents to the MongoDB database through Kafka Connect.
     \end{itemize}
 \end{itemize}
 
