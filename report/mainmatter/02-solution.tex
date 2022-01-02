@@ -48,13 +48,114 @@ The services in EcoBeach were chosen or created to provide solutions to the sub-
 \paragraph{How to build a mobile application that uses mobile sensing in a meaningful way to visualize shoreline changes?} To make the EcoBeach app utilize mobile sensing, we made the app rely on the user's current location and provide data accordingly. As the EcoBeach app is an Android application, the Google Maps API is what the app relies on to provide most of its features. The EcoBeach app is described in detail in \autoref{subsec:ecobeach-app}
 
 \subsection{The infrastruture}\label{subsec:the-infrastructure}
-- Present the infrastructure diagram
-- Explain the infrastructure diagram
-- dont go in depth here, thats what we have the Hosting Setup for.
 
-\subsection{Advantages and disadvantages of EcoBeach}
-- Advantages of the solution
-- Disadvantages of the solution
+This section describes the solution's infrastructure, how everything is tied together, how services communicate, and this setup's resilience. Additionally, it aims to give the reader a better understanding of the need for the different services and sheds light on why the specific setup was selected. 
+
+The infrastructure of EcoBeach consists of three servers that are placed in different cities within the EU, hereunder: 
+
+\begin{itemize}
+    \item Helsinki, Finland
+    \item Falkenstein, Germany
+    \item Nuremberg, Germany
+\end{itemize}
+
+
+These servers make up the EcoBeach cluster and will be referenced as the cluster henceforth. Each server is unmanaged and runs a clean Ubuntu 20.04 installation supplied by Hetzner. At the time of setup, Hetzner's pool of servers was only available within Germany and Finland, hence the three servers' placement. The servers are placed within a subnet, allowing them to communicate securely and without interference. 
+Nodes and servers will be used interchangeably throughout the remainder of this section. 
+
+For a more detailed overview of the setup, please consult the infrastructure diagram \autoref{fig:infrastructure}, which visualizes the interactions occurring between the services and how they relate to each other.
+
+\subsubsection{Container Orchestration}
+
+Setting up services across many nodes can be cumbersome and painful; additionally, configuring each service manually increases the risk of incorrectly setting up the configuration. A bad configuration can easily result in many hours spent debugging or the cluster becoming unstable down the road until the root cause is found. 
+Today, many of these pain points can be alleviated by container orchestration, which takes care of the communication between the nodes, and enables a master node to distribute services across the cluster intelligently. 
+
+
+The EcoBeach cluster uses Docker Swarm, mainly because of the group's current knowledge and experience with docker. Also, its interoperability with docker-compose files makes orchestration a breeze with most services. Docker Swarm also takes care of load-balancing - once a service is exposed externally, docker will automatically make sure incoming requests are distributed equally by round-robin selection. Additionally, Docker Swarm is fault-tolerant and will automatically bring up a service that may have halted unless otherwise specified. 
+
+Docker Swarm also allows for placement constraints, which is incredibly useful when a specific service should only be available on a specific node.
+
+Deployment of the project's codebase is relatively easy with docker swarm. Code that should be deployed is wrapped in a docker image and then uploaded to a docker registry. Afterward, the image can be used as a distributed service within the cluster by including it as a docker-compose file. 
+
+The entirety of EcoBeach's cluster, except our database, is being managed by Docker Swarm. 
+
+\subsubsection*{Services}
+
+Our cluster is running the following services:
+
+\begin{itemize}
+    \item Manage by Docker Swarm
+    \begin{itemize}
+        \item Kafka (and ZooKeeper)
+        \item Apache Hadoop HDFS
+        \item Apache Spark
+        \item EcoBeach Codebase
+        \begin{itemize}
+            \item NDWI Scraper
+            \item Image Analyzer
+            \item Rest API
+        \end{itemize}
+    \end{itemize}
+    \item Manually managed
+    \begin{itemize}
+        \item MongoDB
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Data ingestion and travel path}
+
+The data ingestion and the application's entry point occur within the NDWI scraper. The NDWI scraper services are never exposed externally; however, they communicate internally with our Kafka services and regularly publish to specific Kafka topics. 
+
+The scrapers will continuously download relevant data from the sentinel 2 API during scheduled intervals; when this happens, a grayscale image is downscaled and generated from the input area, separating water and shore, as soon as one of the scrapers find something relevant matching our filter. This scraper then publishes location information about the found data and the grayscale image to a Kafka topic that other subscribing services can further operate on.
+
+While these services are not necessarily scraping all the time, the services are always up and running, making them highly available. The services are also replicated across the cluster since retrieving the relevant data is often a slow process with the sentinel 2 API. When replicated, the data intake and throughput are increased. This increase makes much sense since the cluster can handle a much larger intake than the amount of relevant data provided by the Sentinel 2 API. Additionally, this setup has the added benefit of also allowing for more granular control, as each replicated service is responsible for a different region. If the cluster's performance is under strain, a region can be disabled temporarily and reenabled at another time when the cluster is no longer under load.
+
+\subsubsection{Event streaming}
+
+When the number of services within the cluster grows, intercommunication can become troublesome and, at worst, force one to continually make cumbersome changes to each service until communication is made. The solution to this problem is Kafka. Kafka follows the pub-sub event pattern and thus provides a stream with N amounts of topics that the services can publish or subscribe to.
+
+The cluster runs three Kafka brokers, one on each server. Additionally, the Helsinki node runs zookeeper, which (amongst many other things) synchronizes incoming jobs and keeps track of what is Kafka is doing across the cluster. Having brokers on each node introduces redundancy and allows for better distribution of the incoming/outgoing messages. Kafka also makes the cluster very scalable, as newer services can start consuming on different topics if need be, without necessarily interfering with current working services. Another benefit to Kafka is Kafka Connect, which integrates external services by installing a specific plugin. Once set up, sources and sinks can be created that Kafka can produce to or consume from respectively.
+
+Communication between the brokers and the other services is currently limited to internal networking. Not only does this make the infrastructure more secure, but since all the services reside on the same network, there is simply no need for it to be publicly accessible.
+
+The Kafka brokers are used by:
+\begin{itemize}
+    \item The NDWI Scraper (Producer): 
+    \begin{itemize}
+        \item Produces whenever an image matches the filter, metadata and grayscale are produced to the "ndwi_images" topic.
+    \end{itemize}
+    \item The Image Analyzer (Producer & Consumer): 
+    \begin{itemize}
+        \item Consumes on the "ndwi_images" topic; thus, whenever an image is available, this service will analyze the image to better understand the amount of water to shore ratio within the area supplied in the image.
+        \item Produces the resulting data set onto the "ndwi_results" topic.
+    \end{itemize}
+    \item MongoDB connector (Consumer):
+    \begin{itemize}
+        \item Consumes items from the "ndwi_results" topic and copies the contents to the MongoDB database through Kafka Connect.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Data storage}
+
+The database of choice was settled on MongoDB. MongoDB is great in a significant data context, as it scales incredibly well, with built-in tooling for redundancy and sharding, which is often lacking in many other DBMS solutions, or left to external plugins with added overhead. 
+Furthermore, MongoDB being document-oriented makes it straightforward to store data of different structures, as in the case of the data coming from our Kafka Connect connector. 
+MongoDB is also well supported within the developer community, making it possible to connect and communicate with the database in many different languages and frameworks. 
+
+MongoDB is the only service that is manually managed due to some of the intricate configurations that had to be done to connect the different nodes. Like the other services, the database is also only internally available within the cluster to enhance security. 
+
+The MongoDB database is placed on the Helsinki and Falkenstein nodes, configured as a replica set. MongoDB will automatically replicate data across the two databases, and should one fail, the other can take over to maximize uptime and make the entire setup fault-safe. 
+
+\subsubsection{External availability}
+
+The only services that are externally available is the rest API. The rest API retrieves data from our database and exposes it publicly. Front-end applications can then consume the API, and in this case, our Android app relies on the information given in the API.
+
+\subsubsection{Advantages and Disadvantages}
+
+The services and the features they provide make for a robust configuration that is scalable. The cluster can easily handle the limited intake retrieved from the Sentinel 2 API. Additionally, the current setup incorporates redundancy in many levels; as such, the database, event processing (Kafka), and the scrapers can easily recover if a service should fail. Should the Falkenstein or Nuremberg nodes go offline for some reason, the system can still process incoming requests. 
+
+The same is not the case for the Helsinki node, which is a significant disadvantage of the current setup. Should the Helsinki node go offline or crash, HDFS would no longer be available, as the NameNode is placed there. The Spark Master would also die, which would leave the current running applications intact on the other servers, but new applications would be impossible to schedule. Thus the Helsinki becomes a single point of failure for the setup.
+
+These issues could have been mitigated by placing a standby SparkMaster and Namenode on the other servers.
 
 \section{Solution Description}
 
