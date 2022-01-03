@@ -36,18 +36,15 @@
 \printbibliography[heading=bibintoc]
 \printglossaries
 
-
-
-\backmatter
 \appendix
 % \input{path/to/file}
-
+\newgeometry{top=.5cm}
 \chapter{Infrastructure Diagram}\label{ch:infrastructure-diagram}
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=\textwidth]{infrastructure.png}
+    \includegraphics[width=0.745\textwidth]{infrastructure.png}
     \caption{The infrastructure of EcoBeach and how the included services relate to each other.}
 \end{figure}
-
+\restoregeometry
 \end{document}
