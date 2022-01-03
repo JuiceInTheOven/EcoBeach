@@ -1,4 +1,4 @@
-\documentclass[12pt, oneside]{book}
+\documentclass[12pt, oneside, notitlepage]{book}
 \input{preamble/packages}
 \input{preamble/setup}
 \input{glossary}
@@ -21,8 +21,14 @@
 \date{\today}
 
 \begin{document}
-\clearpage\maketitle
-\thispagestyle{empty}
+%TC:ignore
+\begin{titlingpage}
+    \maketitle
+    \begin{center}
+        Character count with spaces: NN $\approx$ N pages.
+    \end{center}
+\end{titlingpage}
+%TC:endignore
 \frontmatter
 % \input{path/to/file}
 
@@ -33,8 +39,8 @@
 \input{mainmatter/02-solution.tex}
 \input{mainmatter/03-conclusion.tex}
 
+\printnoidxglossary[type=acronym]
 \printbibliography[heading=bibintoc]
-\printglossaries
 
 \appendix
 % \input{path/to/file}
