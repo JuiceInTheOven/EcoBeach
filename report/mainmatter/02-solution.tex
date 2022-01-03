@@ -49,11 +49,9 @@ The services in EcoBeach were chosen or created to provide solutions to the sub-
 
 \subsection{Advantages and Disadvantages}
 
-The services and the features they provide make for a robust configuration that is scalable. The cluster can easily handle the limited intake retrieved from the Sentinel 2 API. Additionally, the current setup incorporates redundancy in many levels; as such, the database, event processing (Kafka), and the scrapers can easily recover if a service should fail. Should the Falkenstein or Nuremberg nodes go offline for some reason, the system can still process incoming requests. 
+The applications, the cluster, and the features they provide make for a robust configuration that is scalable. Our infrastructure can easily handle the limited intake retrieved from the Sentinel 2 API. Additionally, the current setup incorporates redundancy in many levels; as such, the database, event processing (Kafka), and the scrapers can easily recover if a service should fail; this will be further explored within \autoref{subsec:the-infrastructure}. The android app provides a clear view of the available data points and gives the user instant access to relevant metrics surrounding the beaches. Additionally, the setup can download and examine historical data, which allows for analytics. These analytics can, in the future, be used to track and extrapolate the changes occurring over time, which could, in turn, be used to estimate the future of beach health.\\\\
 
-The same is not the case for the Helsinki node, which is a significant disadvantage of the current setup. Should the Helsinki node go offline or crash, HDFS would no longer be available, as the NameNode is placed there. The Spark Master would also die, which would leave the current running applications intact on the other servers, but new applications would be impossible to schedule. Thus the Helsinki becomes a single point of failure for the setup.
-
-These issues could have been mitigated by placing a standby SparkMaster and Namenode on the other servers.
+\noindent The disadvantage of this approach is that the scrapers can often sit and wait for incoming data. The satellite imagery is not real-time, and thus the solution cannot offer real-time user alerts. The android app currently shows limited information gathered and should contain more contextual information for the end-user. 
 
 \section{Solution Description}
 
