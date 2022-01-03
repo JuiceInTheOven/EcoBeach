@@ -63,7 +63,7 @@ The infrastructure of EcoBeach consists of three servers that are placed in diff
 These servers make up the EcoBeach cluster and will be referenced as the cluster henceforth. Each server is unmanaged and runs a clean Ubuntu 20.04 installation supplied by Hetzner. At the time of setup, Hetzner's pool of servers was only available within Germany and Finland, hence the three servers' placement. The servers are placed within a subnet, allowing them to communicate securely and without interference. 
 Nodes and servers will be used interchangeably throughout the remainder of this section. 
 
-For a more detailed overview of the setup, please consult the infrastructure diagram \autoref{fig:infrastructure}, which visualizes the interactions occurring between the services and how they relate to each other.
+For a more detailed overview of the setup, please consult the infrastructure diagram in \autoref{ch:infrastructure-diagram}, which visualizes the interactions occurring between the services and how they relate to each other.
 
 \subsubsection{Container Orchestration}
 
@@ -79,7 +79,7 @@ Deployment of the project's codebase is relatively easy with docker swarm. Code 
 
 The entirety of EcoBeach's cluster, except our database, is being managed by Docker Swarm. 
 
-\subsubsection*{Services}
+c\subsubsection*{Services}
 
 Our cluster is running the following services:
 
