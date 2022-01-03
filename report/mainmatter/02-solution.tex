@@ -47,7 +47,39 @@ The services in EcoBeach were chosen or created to provide solutions to the sub-
 
 \paragraph{How to build a mobile application that uses mobile sensing in a meaningful way to visualize shoreline changes?} To make the EcoBeach app utilize mobile sensing, we made the app rely on the user's current location and provide data accordingly. As the EcoBeach app is an Android application, the Google Maps API is what the app relies on to provide most of its features. The EcoBeach app is described in detail in \autoref{subsec:ecobeach-app}
 
-\subsection{The infrastruture}\label{subsec:the-infrastructure}
+\subsection{Advantages and Disadvantages}
+
+The services and the features they provide make for a robust configuration that is scalable. The cluster can easily handle the limited intake retrieved from the Sentinel 2 API. Additionally, the current setup incorporates redundancy in many levels; as such, the database, event processing (Kafka), and the scrapers can easily recover if a service should fail. Should the Falkenstein or Nuremberg nodes go offline for some reason, the system can still process incoming requests. 
+
+The same is not the case for the Helsinki node, which is a significant disadvantage of the current setup. Should the Helsinki node go offline or crash, HDFS would no longer be available, as the NameNode is placed there. The Spark Master would also die, which would leave the current running applications intact on the other servers, but new applications would be impossible to schedule. Thus the Helsinki becomes a single point of failure for the setup.
+
+These issues could have been mitigated by placing a standby SparkMaster and Namenode on the other servers.
+
+\section{Solution Description}
+
+In this section, an in-depth description of the solution is presented. First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, process, and visualize data in EcoBeach are presented.
+
+\subsection{Big Data stack} \label{subsec:the-stack}
+When planning our project, distributed data storage and redundancy was one of the most important aspects we were looking to implement.
+Our cluster runs on multiple servers - or nodes - with one designated as master - or name node - to provide redundancy and reduce, or completely eliminite risk of data loss.
+Since the sheer size of the data that we request and analyze from the Sentinel2 API demands parallel processing, we also implemented the necessary tools to provide a seamless streaming of data.
+
+
+\subsubsection{HDFS}
+When image scrapers are running on all the servers, they store their data in the Hadoop Distributed File System. Our HDFS consists of three servers, out of which our Helsinki server is the name node, and all three servers are data nodes.
+The name node manages the filesystem meta-data, while the three data nodes store the actual data.
+
+\subsubsection{Kafka}
+Kafka is running on all servers and connects individual parts of our clusters via Kafka Connect streams. We used Kafka topics to differentiate between the origin of the data, whether it is the raw data coming from the NDWI scrapers or the analyzed images.
+Kafka provides us with the opportunity to stream our data within the cluster.
+
+\subsubsection{Spark}
+We use Apache Spark for our image analyzers which helps us process the data in batches via a continuous process stream. The data is consumed from Kafka continously and distributed Spark workers run a python job for image analyzation.
+\subsubsection{MongoDb}
+
+Our choice of distributed database is MongoDB with one replica set that replicates data on Helsinki and Nuremberg. MongoDB is running on two server instances for extra redundancy. As a document-based NoSQL database, it stores its objects in JSON format, making it easier to communicate data to the API.
+
+\subsection{The infrastructure}\label{subsec:the-infrastructure}
 
 This section describes the solution's infrastructure, how everything is tied together, how services communicate, and this setup's resilience. Additionally, it aims to give the reader a better understanding of the need for the different services and sheds light on why the specific setup was selected. 
 
@@ -79,34 +111,29 @@ Deployment of the project's codebase is relatively easy with docker swarm. Code 
 
 The entirety of EcoBeach's cluster, except our database, is being managed by Docker Swarm. 
 
-c\subsubsection*{Services}
+\subsubsection*{Management of services in the cluster}
 
-Our cluster is running the following services:
+The following services are managed through docker swarm:
 
 \begin{itemize}
-    \item Manage by Docker Swarm
+    \item Kafka (and ZooKeeper)
+    \item Apache Hadoop HDFS
+    \item Apache Spark
+    \item EcoBeach Codebase
     \begin{itemize}
-        \item Kafka (and ZooKeeper)
-        \item Apache Hadoop HDFS
-        \item Apache Spark
-        \item EcoBeach Codebase
-        \begin{itemize}
-            \item NDWI Scraper
-            \item Image Analyzer
-            \item Rest API
-        \end{itemize}
-    \end{itemize}
-    \item Manually managed
-    \begin{itemize}
-        \item MongoDB
+        \item NDWI Scraper
+        \item Image Analyzer
+        \item Rest API
     \end{itemize}
 \end{itemize}
+\noindent
+Besides these services, our MongoDB instance is manually managed due to intricate settings.
 
 \subsubsection{Data ingestion and travel path}
 
 The data ingestion and the application's entry point occur within the NDWI scraper. The NDWI scraper services are never exposed externally; however, they communicate internally with our Kafka services and regularly publish to specific Kafka topics. 
 
-The scrapers will continuously download relevant data from the sentinel 2 API during scheduled intervals; when this happens, a grayscale image is downscaled and generated from the input area, separating water and shore, as soon as one of the scrapers find something relevant matching our filter. This scraper then publishes location information about the found data and the grayscale image to a Kafka topic that other subscribing services can further operate on.
+The scrapers continually download satellite imagery, processes it into grayscale images, and publish it to Kafka for further operations. For a more in-depth description of how the \acrfull{sss} works see \autoref{subsec:sentinel-satellite-scraper}.
 
 While these services are not necessarily scraping all the time, the services are always up and running, making them highly available. The services are also replicated across the cluster since retrieving the relevant data is often a slow process with the sentinel 2 API. When replicated, the data intake and throughput are increased. This increase makes much sense since the cluster can handle a much larger intake than the amount of relevant data provided by the Sentinel 2 API. Additionally, this setup has the added benefit of also allowing for more granular control, as each replicated service is responsible for a different region. If the cluster's performance is under strain, a region can be disabled temporarily and reenabled at another time when the cluster is no longer under load.
 
@@ -148,37 +175,6 @@ The MongoDB database is placed on the Helsinki and Falkenstein nodes, configured
 \subsubsection{External availability}
 
 The only services that are externally available is the rest API. The rest API retrieves data from our database and exposes it publicly. Front-end applications can then consume the API, and in this case, our Android app relies on the information given in the API.
-
-\subsubsection{Advantages and Disadvantages}
-
-The services and the features they provide make for a robust configuration that is scalable. The cluster can easily handle the limited intake retrieved from the Sentinel 2 API. Additionally, the current setup incorporates redundancy in many levels; as such, the database, event processing (Kafka), and the scrapers can easily recover if a service should fail. Should the Falkenstein or Nuremberg nodes go offline for some reason, the system can still process incoming requests. 
-
-The same is not the case for the Helsinki node, which is a significant disadvantage of the current setup. Should the Helsinki node go offline or crash, HDFS would no longer be available, as the NameNode is placed there. The Spark Master would also die, which would leave the current running applications intact on the other servers, but new applications would be impossible to schedule. Thus the Helsinki becomes a single point of failure for the setup.
-
-These issues could have been mitigated by placing a standby SparkMaster and Namenode on the other servers.
-
-\section{Solution Description}
-
-In this section, an in-depth description of the solution is presented. First, the hosting setup and the central services that drive the data pipeline are explained. After this, the services that create, read, process, and visualize data in EcoBeach are presented.
-
-\subsection{HDFS, Kafka, Spark and MongoDb} \label{subsec:the-stack}
-When planning our project, distributed data storage and redundancy was one of the most important aspects we were looking to implement.
-Our cluster runs on multiple servers - or nodes - with one designated as master - or name node - to provide redundancy and reduce, or completely eliminite risk of data loss.
-Since the sheer size of the data that we request and analyze from the Sentinel2 API demands parallel processing, we also implemented the necessary tools to provide a seamless streaming of data.
-
-
-\subsubsection{HDFS}
-When image scrapers are running on all the servers, they store their data in the Hadoop Distributed File System. Our HDFS consists of three servers, out of which our Helsinki server is the name node, and the two servers residing in germany are data nodes.
-The name node manages the filesystem meta-data, while the two data nodes store the actual data.
-
-\subsubsection{Kafka}
-Kafka is running on all servers and connects individual parts of our clusters via Kafka Connect streams. We used Kafka topics to differentiate between the origin of the data, whether it is the raw data coming from the NDWI scrapers or the analyzed images.
-Kafka provides us with the opportunity to stream our data within the cluster.
-
-\subsubsection{Spark}
-We use Apache Spark for our image analyzers which helps us process the data in batches via a continuous process stream. The data is consumed from Kafka continously and distributed Spark workers run a python job for image analyzation.
-\subsubsection{MongoDb}
-Our choice of distributed database is MongoDB which enables us to shard our data. MongoDB is running on two server instances for extra redundancy. As a document based NoSQL database, it stores its objects in Json format which also makes it easier to communicate data to the API.
 
 \subsection{Sentinel Satellite Scraper}\label{subsec:sentinel-satellite-scraper}
 The \acrfull{sss} is a python script created to scrape and continuously download satellite imagery from given geo-locations. The script was created as EcoBeach relies on the analysis of geo-locations to determine how shorelines are changing. Because of this, it requires a steady input of data to reliable show how shorelines historically and currently have changed.\\\\
@@ -309,7 +305,7 @@ The backend services hosting the API is a multi-tier architecture system which b
 
 Introducing multiple tiers in our architecture allows us to have a very decoupled system in case a tier needs to be changed, or used in another system of similar kind. 
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=12cm]{api_architecture.png}
     \caption{WebAPI Multi-layer architecture}
@@ -346,7 +342,7 @@ On \autoref{fig:navigation}, the navigation between the activities is shown. Aft
 
 Having Internet and location enabled are very important, so in the MainActivity both are checked. If either the Internet or the location is not enabled, the user receives an alert, and the application is closed.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=8.5cm]{navigation.png}
     \caption{Navigation between the Activities.}
